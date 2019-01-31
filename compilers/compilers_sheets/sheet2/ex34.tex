@@ -1,0 +1,103 @@
+\section{Problem 3.4}
+It is impossible to be able to do this with perfect accuracy at compile-time, because the variables that are initialised at any time might depend on information known only at run-time (such as user-input). I would err on the side of being more restrictive rather than less restrictive -- forcing variables to always have some though-out assigned value before use makes programmers think about these edge cases, which eliminates a whole class of bugs. Thus I would enforce a rule that a variable must be assigned before use no matter what the execution path through the code. The most difficult control structure to deal with is \texttt{exit}, as only these break normal control flow. A function that checks this property follows:
+
+\begin{lstlisting}[language=Ml]
+
+let intersect2 xs ys = filter (fun x -> mem x xs) ys
+let intersect (xs :: xss) = fold_right intersect2 xss xs 
+
+let has_exit = function
+    Seq (x :: xs) -> has_exit x || has_exit (Seq xs)
+    | Exit -> true
+    | IfStmt(e, ifpt, elsept) -> has_exit ifpt || has_exit elsept
+    | WhileStmt(test, body) -> has_exit body
+    | RepeatStmt(body, test) -> has_exit body
+    | LoopStmt body -> false
+    | CaseStmt (switch, cases, default) ->
+        has_exit default || exists has_exit (map snd cases)
+    | _ -> false
+
+let will_exit = function
+    Seq (x :: xs) -> will_exit x || will_exit (Seq xs)
+    | Exit -> true
+    | IfStmt(e, ifpt, elsept) -> will_exit ifpt && will_exit elsept
+    | WhileStmt _ -> false
+    | RepeatStmt (body, test) -> will_exit body
+    | LoopStmt body -> false
+    | CaseStmt (switch, cases, default) ->
+        will_exit default && for_all will_exit (map snd cases)
+    | _ -> false
+
+(* f takes an expression and returns the variables it uses
+ * g takes a statement and returns a tuple: the variables it
+ * needs to be initialised prior, and the variables it
+ * certainly initialises *)
+let test_stmt = 
+    let rec f = function
+        Constant _ -> []
+        | Variable x -> [x.x_lab]
+        | Monop (_, e) -> f e
+        | Binop (_, e1, e2) -> f e1 @ f e2 in
+    let rec g = function
+        Skip -> ([], [])
+        | Seq (x :: xs) ->
+            (* A sequence needs everything that the first part needs,
+             * together with everything the second part needs that is
+             * not defined in the first part.
+             * A sequence defines everything that the first or second
+             * part defines
+             * SPECIAL CASE: if the first thing will exit, then ignore
+             * the rest. If the first thing might exit, then we
+             * must take into account the entire Seq for needs,
+             * and only the first part for things it defines *)
+            let (usedl, defsl) = g x
+            and (usedr, defsr) = g (Seq xs)
+            and used = usedl @ (filter (fun x -> not (mem x defsl)) usedr)
+            and defs = defsl @ defsr
+            in if will_exit x then (usedl, defsl)
+            else if has_exit x then (used, defsl)
+            else (used, defs)
+        | Seq [] -> ([], [])
+        | Assign (v, e) -> (f e, [v.x_lab])
+        | Print e -> (f e, [])
+        | Newline -> ([], [])
+        | IfStmt (test, thenpt, elsept) ->
+            (* An if statement needs everything any of its clauses
+             * needs, and defines only what both of its clauses
+             * defines *)
+            let used1 = f test
+            and (used2, defs2) = g thenpt
+            and (used3, defs3) = g elsept
+            in (used1 @ used2 @ used3
+               , intersect2 defs2 def3)
+        | WhileStmt (test, body) ->
+            (* a while statement needs everything its test or
+             * body might need, and defines nothing (as the body
+             * might not even be run *)
+            let used1 = f test
+            and (used2, _) = g body
+            in (used1 @ used2, [])
+        | RepeatStmt (body, test) ->
+            (* a repeat statement is like a while, just that
+             * it defines everything its body defines, since
+             * the body is guaranteed to be run *)
+            let used1 = f test
+            and (used2, defs) = g body
+            in (used1 @ used2, defs)
+        | ExitStmt -> ([], [])
+        | LoopStmt body ->
+            (* A loop statement needs everything its body needs,
+             * and defines what it's body defines *)
+             g body
+        | CaseStmt (switch, cases, default) ->
+            (* A case statement needs everything any of its
+             * body or switch needs, and defines whatever
+             * all of the cases defines for sure *)
+            let used1 = f switch
+            and used2 = concat (map fst (map g (map snd cases)))
+            and defs2 = map snd (map g (map snd cases))
+            and (used3, defs3) = g default
+            in (used1 @ used2 @ used3, intersect (defs3 :: defs2))
+    in function x -> length (fst (g x)) == 0
+
+\end{lstlisting}

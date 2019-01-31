@@ -1,0 +1,27 @@
+\newtheorem{theorem}{Claim}
+
+The code for the sorter, and the testing rig, follow:
+
+\lstinputlisting[language=scala]{Q6.scala}
+
+\subsection{Finding the number of sequentially ordered messages}
+
+\begin{theorem}
+    If we sort $n$ integers, then the largest set of messages through \texttt{inner\_channels} that must be sequentially ordered is of size $n$.
+\end{theorem}
+\begin{proof}
+Let $M(i, j)$ denote the $i$'th message passed through \texttt{inner\_channels(j)}. \\
+First, there exist $n$ messages that must happen in a particular order; more precisely: $M(1, 0) \prec M(2, 0) \prec M(3, 0) \prec ... \prec M(n, 0)$, where $a \prec b$ asserts that $a$ must happen strictly before $b$. \\
+Second, there exists no set of more than $n$ messages that must be ordered sequentially, as the following ordering of messages is possible:
+\begin{itemize}
+\item First $M(1, 0)$.
+\item Then $M(2, 0), M(1, 1)$ simultaneously.
+\item Then $M(3, 0), M(2, 1), M(1, 2)$ simultaneously.
+\item ...
+\item Then $M(n, 0), M(n-1, 1), ..., M(1, n-1)$ simultaneously.
+\end{itemize}
+And the longest sequentially ordered chain of messages in this ordering has length $n$. \\
+So, overall, the largest set of sequentially ordered messages is of size $n$.
+\end{proof}
+
+If we take into account the messages through \texttt{out}, this gives us $n+1$ sequentially ordered messages overall.

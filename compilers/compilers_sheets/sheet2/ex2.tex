@@ -1,0 +1,89 @@
+\section{Problem 2}
+\subsection{a}
+
+To do this, simply use the following sequence of instructions:\\
+\ASMEnv{
+    \ASMRow{Instruction}{Stack after instruction}
+    \ASMRow{CONST 1}{1}
+    \ASMRow{LDGW \_x}{1, x}
+    \ASMRow{PLUS}{1+x}
+    \ASMRow{CONST 1}{1+x, 1}
+    \ASMRow{SWAP}{1, 1+x}
+    \ASMRow{DIV}{1/(1+x)}
+}
+
+\subsection{b}
+\Proof{Supposing that:
+\begin{center}
+$cost(x) = \text{optimal depth for some expression } x$
+\end{center}
+Then: 
+\begin{center}
+$cost(Binop(w, e_1, e_2)) = min \{ max \{ cost(e1), cost(e2)+1\}, max\{ cost(e1)+1, cost(e2) \} \}$
+\end{center}
+}{
+    Note that in order to evaluate $Binop(w, e_1, e_2)$, we must first evaluate $e_1$ and $e_2$ in some order (we can do either first because of the \texttt{SWAP} instructions). Note that if we evaluate, say, $e_1$ first, then evaluating $e_2$ will lead to a stack height one larger for $e_2$ than it would otherwise (due to the result of evaluating $e_1$). So, evaluating $e_1$ first leads to a stack depth of $max \{ cost(e1), cost(e2) + 1 \}$. Symmetrically, evaluating $e_2$ first leads to a stack of depth $max \{ cost(e1)+1, cost(e2) \}$. Taking the smaller of these two leads us to the claim. Note that I ignore the possibility of using the information in one expression to calculate the other. }
+Also, this is an \texttt{Ocaml} definition of the function above:
+
+\begin{lstlisting}[language=Ml]
+let rec cost = function
+      Variable str      -> 1
+    | Constant v        -> 1
+    | Monop (w, y)      -> cost y
+    | Binop (w, e1, e2) -> min
+        (max (cost e1) (1 + cost e2))
+        (max (1 + cost e1) (cost e2))
+
+
+\end{lstlisting}
+\leavevmode
+\\
+
+\newpage
+\Proof{$operands(e) < 2^N \Rightarrow cost(e) \leq N$, where $operands(e) = \text{the number of operands in }e$}{
+    I prove this claim by induction on $|e|$, for all $N$, where $|e| = \text{the number of operands and operators in }e$: \\
+    \Induction{
+        Assume $|e| = 1$. Assume also that $2^N > operands(e)$. Then $2^N > operands(e) \geq |e| = 1$, so $N > 0$. Also, since $|e| = 1$, $e$ is either \texttt{Variable} or a \texttt{Constant}, so $cost(e) = 1 = 2^0 < 2^N$.
+    }{
+        Supposing that the claim is true for all expressions $f$ with $|f| < n$ (where $n > 1$), then, for some expression $e$ with $|e| = n$, we have several cases:
+        \begin{itemize}
+            \item if $e$ is a \texttt{Variable} or \texttt{Constant}, $operands(e) < 2^N \Rightarrow cost(e) \leq N$ is vacuously true, since no \texttt{Variable} or \texttt{Constant} has more than $1$ operands or operators, yet $|e| = n > 1$.
+            \item if $e = \texttt{Monop(}w, f\texttt{)}$, then by definition, $operands(e) = operands(f)$ and $cost(e) = cost(f)$. Since, by the inductive hypothesis, $operands(f) < 2^N \Rightarrow cost(f) \leq N$, then using the previous identities we get that: $operands(e) < 2^N \Rightarrow cost(e) \leq N$.
+            \item if $e = \texttt{Binop(}w, f, g\texttt{)}$. Assume $operands(e) < 2^N$ for some $N$. Let $M$ and $K$ be the unique integers that satisfy $2^{M-1} \leq operands(f) < 2^M$ and $2^{K-1} \leq operands(g) < 2^K$. W.l.o.g. let $M \leq K$. Assume for contradiction that $N \leq M$. Then
+                \begin{align*} operands(e) &= 1 + operands(f) + operands(g) && \text{(by definition of $operands$)}\\
+                    &\geq 1 + 2^{M-1} + 2^{K-1} && \text{(definition $M, K$)}\\
+                                     &\geq 1 + 2^{N-1} + 2^{N-1} && \text{(assumption and transitivity)}\\
+                                     &> 2^N \end{align*}
+                a contradiction. So $N > M$. Assume for contradiction that $N < K$. Then
+                \begin{align*} operands(e) &= 1 + operands(f) + operands(g) && \text{(as before)}\\
+                    &\geq 1 + 2^{M-1} + 2^{K-1} && \text{(as before)}\\
+                                      &\geq 1 + 0 + 2^{(N+1)-1} && (N < K \Rightarrow K \geq N+1))\\
+                                      &> 2^N \end{align*}
+                a contradiction.  So $N \geq K$. Use the inductive hypothesis on $f, M$ and $g, K$ to get that $cost(f) \leq M$ and $cost(g) \leq K$. Now
+                \begin{align*} cost(e) &= min \{ max \{ cost(f), 1 + cost(g) \}, max \{ 1 + cost(f), 1 + cost(g) \} \}\\
+                                       &\leq min \{ max \{ M, 1 + K \}, max \{ 1+M, K \} \}\\
+                                       &\leq min \{ max \{ N-1, N+1 \}, \{ 1 + N-1, N \} \}\\
+                &\leq N \end{align*}
+        \end{itemize}
+    }
+    So, as the base case \textit{BC} holds, and the inductive step \textit{IS} works in all cases, the claim is true
+}
+
+\newpage
+\subsection{c}
+
+\begin{lstlisting}[language=ML]
+let rec gen_expr =
+    function
+      Constant x ->
+        CONST x
+    | Variable x ->
+        SEQ [LINE x.x_line; LDGW x.x_lab]
+    | Monop (w, e1) ->
+        SEQ [gen_expr e1; MONOP w]
+    | Binop (w, e1, e2) ->
+        if cost e1 >= cost e2 then
+            SEQ [gen_expr e1; gen_expr e2; BINOP w]
+        else
+            SEQ [gen_expr e2; gen_expr e1; SWAP; BINOP w]
+\end{lstlisting}

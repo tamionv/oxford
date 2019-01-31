@@ -1,0 +1,23 @@
+An optimisation that can be applied if we consider the entire loop is making q and s live in registers, say r0 and r1, for the duration of the loop. This saves us from having to continually store and load their values. The code inside the loop would then be reduced to just:
+
+\begin{lstlisting}
+ldr r2, [r0]
+add r1, r1, r2
+ldr r0, [r0, #4]
+\end{lstlisting}
+
+We would also need to add some code before and after the loop, to load q and s into r0 and r1 initially, and then to store them back afterwards, i.e.:
+
+\begin{lstlisting}
+ldr r0, [fp, #-4]
+ldr r1, [fp, #-8]
+\end{lstlisting}
+
+and:
+
+\begin{lstlisting}
+str r0, [fp, #-4]
+str r1, [fp, #-8]
+\end{lstlisting}
+
+respectively. Note that this is an improvement in the number of instructions run for the loop, provided that the loop runs at least twice, and if it runs many times, it is a massive improvement, reducing the number of instructions to about a half of the number of instructions we used previously.

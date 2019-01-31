@@ -1,0 +1,471 @@
+diff -r 9f5c8e19f204 lab4/check.ml
+--- a/lab4/check.ml	Mon Oct 15 21:58:03 2018 +0100
++++ b/lab4/check.ml	Wed Jan 23 22:40:39 2019 +0000
+@@ -90,7 +90,7 @@
+ (* |has_value| -- check if object is suitable for use in expressions *)
+ let has_value d = 
+   match d.d_kind with
+-      ConstDef _ | VarDef | CParamDef | VParamDef | StringDef -> true 
++      ConstDef _ | VarDef | CParamDef | VParamDef | StringDef | NParamDef-> true 
+     | _ -> false
+ 
+ (* |check_var| -- check that expression denotes a variable *)
+@@ -102,6 +102,8 @@
+           match d.d_kind with 
+               VarDef | VParamDef | CParamDef ->
+                 d.d_mem <- d.d_mem || addressible
++            | NParamDef ->
++                sem_error "$ is a by-name parameter, and has no address" [fId x.x_name]
+             | _ -> 
+                 sem_error "$ is not a variable" [fId x.x_name]
+         end
+@@ -198,7 +200,7 @@
+ (* |check_arg| -- check one (formal, actual) parameter pair *)
+ and check_arg formal arg env =
+   match formal.d_kind with
+-      CParamDef | VParamDef ->
++      CParamDef | VParamDef | NParamDef->
+         let t1 = check_expr arg env in
+         if not (same_type formal.d_type t1) then
+           sem_error "argument has wrong type" [];
+@@ -293,7 +295,8 @@
+   chk (List.sort compare vs)
+ 
+ (* |check_stmt| -- check and annotate a statement *)
+-let rec check_stmt s env alloc =
++let rec in_loop = ref false
++and check_stmt s env alloc =
+   err_line := s.s_line;
+   match s.s_guts with
+       Skip -> ()
+@@ -337,18 +340,26 @@
+         check_stmt elsept env alloc
+ 
+     | WhileStmt (cond, body) ->
++        let old_in_loop_value = !in_loop in
++        in_loop := true;
+         let ct = check_expr cond env in
+         if not (same_type ct boolean) then
+           sem_error "type mismatch in while statement" [];
+-        check_stmt body env alloc
++        check_stmt body env alloc;
++        in_loop := old_in_loop_value
+ 
+     | RepeatStmt (body, test) ->
++        let old_in_loop_value = !in_loop in
++        in_loop := true;
+         check_stmt body env alloc;
+         let ct = check_expr test env in
+         if not (same_type ct boolean) then
+-          sem_error "type mismatch in repeat statement" []
++            sem_error "type mismatch in repeat statement" [];
++        in_loop := old_in_loop_value
+ 
+     | ForStmt (var, lo, hi, body, upb) ->
++        let old_in_loop_value = !in_loop in
++        in_loop := true;
+         let vt = check_expr var env in
+         let lot = check_expr lo env in
+         let hit = check_expr hi env in
+@@ -361,7 +372,8 @@
+         (* Allocate space for hidden variable.  In the code, this will
+            be used to save the upper bound.  *)
+         let d = make_def (intern "*upb*") VarDef integer in
+-        alloc d; upb := Some d
++        alloc d; upb := Some d;
++        in_loop := old_in_loop_value
+ 
+     | CaseStmt (sel, arms, deflt) ->
+         let st = check_expr sel env in
+@@ -377,6 +389,10 @@
+         let vs = List.map check_arm arms in
+         check_dupcases vs;
+         check_stmt deflt env alloc
++     | ContinueStmt ->
++        if not !in_loop
++        then sem_error "continue statement must be in a loop" []
++        else ()
+ 
+ 
+ (* TYPES AND DECLARATIONS *)
+@@ -421,7 +437,7 @@
+       CParamDef | VParamDef ->
+         d.d_addr <- Local (param_base + s * !pcount);
+         incr pcount
+-    | PParamDef ->
++    | PParamDef | NParamDef ->
+         d.d_addr <- Local (param_base + s * !pcount);
+         pcount := !pcount + 2
+     | _ -> failwith "param_alloc"
+@@ -434,7 +450,7 @@
+ let do_alloc alloc ds =
+   let h d =
+     match d.d_kind with
+-        VarDef | CParamDef | VParamDef | FieldDef | PParamDef ->
++        VarDef | CParamDef | VParamDef | FieldDef | PParamDef | NParamDef->
+           alloc d
+       | _ -> () in
+   List.iter h ds
+@@ -515,7 +531,33 @@
+         let t = check_heading env heading in
+         let d = make_def x.x_name PParamDef t in
+         add_def d env
+-  
++
++(* This will check if it's argument, a formal parameter, contains 
++ * a by-name parameter at any level *)
++and contains_call_by_name d = match d with
++  VarDecl(NParamDef, _, _) -> true
++  | PParamDecl(Heading(_, params, _)) -> List.exists contains_call_by_name params
++  | _ -> false
++
++(* This checks if a formal parameter is acceptable *)
++and check_param env d = match d with
++  (* If the formal parameter is a by-name parameter
++   * we check if it is of intergral type *)
++  VarDecl(NParamDef, _, te) ->
++    let t = check_typexpr te env in
++    (
++    match t.t_guts with
++      BasicType IntType -> ()
++      | _ -> sem_error "Call by name parameter must be an integer" []
++    )
++  (* If the parameter is a procedure, then we check that
++   * it contains no by-name parameters at any level *)
++  | PParamDecl (Heading(_, params, _)) ->
++      if List.exists contains_call_by_name params
++      then sem_error "Functions that use call-by-name parameters cannot be parameters" []
++      else ()
++  | _ -> ()
++
+ (* |check_heading| -- process a procedure heading into a procedure type *)
+ and check_heading env (Heading (x, fparams, result)) =
+   err_line := x.x_line;
+@@ -529,6 +571,7 @@
+               Some te -> check_typexpr te env | None -> voidtype) in
+   if not (same_type rt voidtype) && not (scalar rt) then
+     sem_error "return type must be scalar" [];
++  List.map (check_param env) fparams;
+   let p = { p_fparams = defs; p_pcount = !pcount; p_result = rt } in
+   mk_type (ProcType p) proc_rep
+ 
+diff -r 9f5c8e19f204 lab4/dict.ml
+--- a/lab4/dict.ml	Mon Oct 15 21:58:03 2018 +0100
++++ b/lab4/dict.ml	Wed Jan 23 22:40:39 2019 +0000
+@@ -80,6 +80,7 @@
+   | VarDef                      (* Variable *)
+   | CParamDef                   (* Value parameter *)
+   | VParamDef                   (* Var parameter *)
++  | NParamDef                   (* Named parameter *)
+   | FieldDef                    (* Field of record *)
+   | ProcDef                     (* Procedure *)
+   | PParamDef                   (* Proc parameter *)
+diff -r 9f5c8e19f204 lab4/dict.mli
+--- a/lab4/dict.mli	Mon Oct 15 21:58:03 2018 +0100
++++ b/lab4/dict.mli	Wed Jan 23 22:40:39 2019 +0000
+@@ -43,6 +43,7 @@
+   | VarDef                      (* Variable *)
+   | CParamDef                   (* Value parameter *)
+   | VParamDef                   (* Var parameter *)
++  | NParamDef                   (* Named parameter *)
+   | FieldDef                    (* Field of record *)
+   | ProcDef                     (* Procedure *)
+   | PParamDef                   (* Proc parameter *)
+diff -r 9f5c8e19f204 lab4/lexer.mll
+--- a/lab4/lexer.mll	Mon Oct 15 21:58:03 2018 +0100
++++ b/lab4/lexer.mll	Wed Jan 23 22:40:39 2019 +0000
+@@ -13,7 +13,8 @@
+ 
+ let symtable = 
+   Util.make_hash 100
+-    [ ("array", ARRAY); ("begin", BEGIN);
++    [ ("continue", CONTINUE);
++      ("array", ARRAY); ("begin", BEGIN);
+       ("const", CONST); ("do", DO); ("if", IF ); ("else", ELSE); 
+       ("end", END); ("of", OF); ("proc", PROC); ("record", RECORD);
+       ("return", RETURN); ("then", THEN); ("to", TO);
+@@ -96,6 +97,7 @@
+     | "<>"              { RELOP Neq }
+     | "<="              { RELOP Leq }
+     | ">="              { RELOP Geq }
++    | "=>"              { RIGHTARROW }
+     | ":="              { ASSIGN }
+     | [' ''\t']+        { token lexbuf }
+     | "(*"              { comment lexbuf; token lexbuf }
+diff -r 9f5c8e19f204 lab4/parser.mly
+--- a/lab4/parser.mly	Mon Oct 15 21:58:03 2018 +0100
++++ b/lab4/parser.mly	Wed Jan 23 22:40:39 2019 +0000
+@@ -23,6 +23,8 @@
+ %token                  PROC RECORD RETURN THEN TO TYPE
+ %token                  VAR WHILE NOT POINTER NIL
+ %token                  REPEAT UNTIL FOR ELSIF CASE
++%token                  CONTINUE
++%token                  RIGHTARROW
+ 
+ %type <Tree.program>    program
+ %start                  program
+@@ -87,6 +89,7 @@
+ formal_decl :   
+     ident_list COLON typexpr            { VarDecl (CParamDef, $1, $3) }
+   | VAR ident_list COLON typexpr        { VarDecl (VParamDef, $2, $4) }
++  | RIGHTARROW ident_list COLON typexpr { VarDecl (NParamDef, $2, $4) }
+   | proc_heading                        { PParamDecl $1 } ;
+ 
+ return_type :
+@@ -119,7 +122,8 @@
+   | FOR name ASSIGN expr TO expr DO stmts END 
+                                         { let v = makeExpr (Variable $2) in
+                                           ForStmt (v, $4, $6, $8, ref None) } 
+-  | CASE expr OF arms else_part END     { CaseStmt ($2, $4, $5) } ;
++  | CASE expr OF arms else_part END     { CaseStmt ($2, $4, $5) }
++  | CONTINUE                            { ContinueStmt } ;
+ 
+ elses :
+     /* empty */                         { makeStmt (Skip, 0) }
+diff -r 9f5c8e19f204 lab4/tgen.ml
+--- a/lab4/tgen.ml	Mon Oct 15 21:58:03 2018 +0100
++++ b/lab4/tgen.ml	Wed Jan 23 22:40:39 2019 +0000
+@@ -8,6 +8,7 @@
+ open Lexer
+ open Print
+ 
++let thunks_to_be_generated = ref []
+ let boundchk = ref false
+ let optlevel = ref 0
+ let debug = ref 0
+@@ -64,7 +65,7 @@
+       ProcDef ->
+         (address d,
+           if d.d_level = 0 then <CONST 0> else schain (!level - d.d_level))
+-    | PParamDef ->
++    | PParamDef | NParamDef->
+         (<LOADW, address d>,
+           <LOADW, <OFFSET, address d, <CONST addr_size>>>)
+     | _ -> failwith "missing closure"
+@@ -99,6 +100,7 @@
+                   address d
+                 else
+                   <LOADW, address d>
++            | NParamDef -> failwith "Named parameters have no address"
+             | StringDef ->
+                 address d
+             | _ -> 
+@@ -128,7 +130,9 @@
+     | None -> 
+         begin
+           match e.e_guts with
+-              Variable _ | Sub _ | Select _ | Deref _ ->
++              Variable x when (get_def x).d_kind == NParamDef ->
++                gen_call x []
++            | Variable _ | Sub _ | Select _ | Deref _ ->
+                 let ld = if size_of e.e_type = 1 then LOADC else LOADW in
+                 <ld, gen_addr e>
+             | Monop (w, e1) ->
+@@ -150,12 +154,20 @@
+   match d.d_kind with
+       LibDef q ->
+         gen_libcall q args
++    | NParamDef ->
++        let (fn, sl) = gen_closure d in
++        <CALL 0, @(fn :: <STATLINK, sl> :: [])>
+     | _ ->
+         let p = get_proc d.d_type in
+         let (fn, sl) = gen_closure d in
+         let args = List.concat (List.map2 gen_arg p.p_fparams args) in
+         <CALL p.p_pcount, @(fn :: <STATLINK, sl> :: numargs 0 args)>
+ 
++and curr_thunk = ref 0
++and get_thunk_label () = 
++    curr_thunk := 1 + !curr_thunk;
++    sprintf "__thunk_$" [fNum !curr_thunk]
++
+ (* |gen_arg| -- generate code for a procedure argument *)
+ and gen_arg f a = 
+   match f.d_kind with
+@@ -174,6 +186,20 @@
+             | _ -> 
+                 failwith "bad funarg"
+         end
++    | NParamDef ->
++        (
++        (* To generate a by-name argument we wrap the argument expression 
++         * in a block that simply returns it: *)
++        let block = makeBlock ([], {s_guts = Return (Some a); s_line = -1}) in
++        (* then create a label for a thunk *)
++        let lab = get_thunk_label () in
++        (* and add the thunk into the global list: *)
++        thunks_to_be_generated := 
++          (lab, !level, block) :: !thunks_to_be_generated;
++        (* Now, the actual code is simply a closure for that
++         * thunk *)
++        [<GLOBAL lab>; <LOCAL 0>]
++        )
+     | _ -> failwith "bad arg"
+ 
+ (* |gen_libcall| -- generate code to call a built-in procedure *)
+@@ -250,7 +276,8 @@
+   end
+ 
+ (* |gen_stmt| -- generate code for a statement *)
+-let rec gen_stmt s = 
++let rec continue_lab = ref (label ())
++and gen_stmt s = 
+   let code =
+     match s.s_guts with
+         Skip -> <NOP>
+@@ -289,37 +316,55 @@
+       | WhileStmt (test, body) ->
+           (* The test is at the top, improving the chances of finding
+              common subexpressions between the test and loop body. *)
+-          let l1 = label () and l2 = label () and l3 = label() in
+-          <SEQ,
+-            <LABEL l1>,
+-            gen_cond test l2 l3,
+-            <LABEL l2>,
+-            gen_stmt body,
+-            <JUMP l1>,
+-            <LABEL l3>>
++          let l1 = label () and l2 = label () and l3 = label()
++          and old_continue_lab = !continue_lab in
++          continue_lab := l1;
++          let return_value = 
++              <SEQ,
++                <LABEL l1>,
++                gen_cond test l2 l3,
++                <LABEL l2>,
++                gen_stmt body,
++                <JUMP l1>,
++                <LABEL l3>> in
++          continue_lab := old_continue_lab;
++          return_value
+ 
+       | RepeatStmt (body, test) ->
+-          let l1 = label () and l2 = label () in
+-          <SEQ,
+-            <LABEL l1>,
+-            gen_stmt body, 
+-            gen_cond test l2 l1,
+-            <LABEL l2>>
++          let l1 = label () and l2 = label () and l3 = label ()
++          and old_continue_lab = !continue_lab in
++          continue_lab := l3;
++          let return_value = 
++              <SEQ,
++                <LABEL l1>,
++                gen_stmt body, 
++                <LABEL l3>,
++                gen_cond test l2 l1,
++                <LABEL l2>> in
++          continue_lab := old_continue_lab;
++          return_value
+ 
+       | ForStmt (var, lo, hi, body, upb) ->
+           (* Use previously allocated temp variable to store upper bound.
+              We could avoid this if the upper bound is constant. *)
+           let tmp = match !upb with Some d -> d | _ -> failwith "for" in
+-          let l1 = label () and l2 = label () in
+-          <SEQ,
+-            <STOREW, gen_expr lo, gen_addr var>,
+-            <STOREW, gen_expr hi, address tmp>,
+-            <LABEL l1>,
+-            <JUMPC (Gt, l2), gen_expr var, <LOADW, address tmp>>,
+-            gen_stmt body,
+-            <STOREW, <BINOP Plus, gen_expr var, <CONST 1>>, gen_addr var>,
+-            <JUMP l1>,
+-            <LABEL l2>>
++          let l1 = label () and l2 = label () and l3 = label ()
++          and old_continue_lab = !continue_lab in
++          continue_lab := l3;
++          let return_value =
++              <SEQ,
++                <STOREW, gen_expr lo, gen_addr var>,
++                <STOREW, gen_expr hi, address tmp>,
++                <LABEL l1>,
++                <JUMPC (Gt, l2), gen_expr var, <LOADW, address tmp>>,
++                gen_stmt body,
++                <LABEL l3>,
++                <STOREW,
++                    <BINOP Plus, gen_expr var, <CONST 1>>, gen_addr var>,
++                <JUMP l1>,
++                <LABEL l2>> in
++          continue_lab := old_continue_lab;
++          return_value
+ 
+       | CaseStmt (sel, arms, deflt) ->
+           (* Use one jump table, and hope it is reasonably compact *)
+@@ -337,7 +382,9 @@
+             <SEQ, @(List.map2 gen_case labs arms)>,
+             <LABEL deflab>,
+             gen_stmt deflt,
+-            <LABEL donelab>> in
++            <LABEL donelab>>
++
++      | ContinueStmt -> <JUMP !continue_lab> in
+ 
+    (* Label the code with a line number *)
+    <SEQ, <LINE s.s_line>, code>
+@@ -408,12 +455,24 @@
+         Target.emit_global (get_label d) (size_of d.d_type)
+     | _ -> ()
+ 
++let rec build_all_thunks () =
++  (* This reverses in order to build the thunks
++   * in the order they are required *)
++  let tmp = List.rev !thunks_to_be_generated in
++  thunks_to_be_generated := [];
++  (* I build all the thunks required *)
++  List.map (fun (lab, lev, bl) -> do_proc lab lev 0 bl) tmp;
++  (* And check if any more are now required *)
++  if (List.length !thunks_to_be_generated > 0)
++    then build_all_thunks ()
++    else ()
++
+ (* |translate| -- generate code for the whole program *)
+ let translate (Prog (block, glodefs)) =
+   Target.preamble ();
+   gen_procs (get_decls block);
+   do_proc "pmain" 0 0 block;
++  build_all_thunks ();
+   List.iter gen_global !glodefs;
+   List.iter (fun (lab, s) -> Target.emit_string lab s) (string_table ());
+   Target.postamble ()
+-
+diff -r 9f5c8e19f204 lab4/tree.ml
+--- a/lab4/tree.ml	Mon Oct 15 21:58:03 2018 +0100
++++ b/lab4/tree.ml	Wed Jan 23 22:40:39 2019 +0000
+@@ -39,6 +39,7 @@
+   | RepeatStmt of stmt * expr
+   | ForStmt of expr * expr * expr * stmt * def option ref
+   | CaseStmt of expr * (expr * stmt) list * stmt
++  | ContinueStmt
+ 
+ and expr = 
+   { e_guts: expr_guts; 
+@@ -124,6 +125,7 @@
+       VarDef -> fStr "VAR"
+     | CParamDef -> fStr "PARAM"
+     | VParamDef -> fStr "VPARAM"
++    | NParamDef -> fStr "NPARAM"
+     | FieldDef -> fStr "FIELD"
+     | _ -> fStr "???"
+ 
+@@ -150,6 +152,8 @@
+     | CaseStmt (sel, arms, deflt) ->
+         let fArm (lab, body) = fMeta "($ $)" [fExpr lab; fStmt body] in
+         fMeta "(CASE $ $ $)" [fExpr sel; fList(fArm) arms; fStmt deflt]
++    | ContinueStmt ->
++        fMeta "(CONTINUE)" []
+ 
+ and fExpr e =
+   match e.e_guts with
+diff -r 9f5c8e19f204 lab4/tree.mli
+--- a/lab4/tree.mli	Mon Oct 15 21:58:03 2018 +0100
++++ b/lab4/tree.mli	Wed Jan 23 22:40:39 2019 +0000
+@@ -54,6 +54,7 @@
+   | RepeatStmt of stmt * expr
+   | ForStmt of expr * expr * expr * stmt * def option ref
+   | CaseStmt of expr * (expr * stmt) list * stmt
++  | ContinueStmt
+ 
+ and expr = 
+   { e_guts: expr_guts; 

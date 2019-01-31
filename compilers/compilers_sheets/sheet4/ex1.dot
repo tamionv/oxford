@@ -1,0 +1,19 @@
+graph{
+    1 [shape=square, label="1: STOREW"]
+    2 [shape=square, label="2: LOADW"]
+    3 [shape=square, label="3: LOCAL -8"]
+    4 [shape=square, label="4: PLUSA"]
+    5 [shape=square, label="5: GLOBAL _a"]
+    6 [shape=square, label="6: LSL"]
+    7 [shape=square, label="7: LOADW"]
+    8 [shape=square, label="8: CONST 2"]
+    9 [shape=square, label="9: LOCAL 40"]
+    1 -- 2
+    1 -- 3
+    2 -- 4
+    4 -- 5
+    4 -- 6
+    6 -- 7
+    6 -- 8
+    7 -- 9
+}

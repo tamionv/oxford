@@ -1,0 +1,390 @@
+\documentclass[a4paper,12pt]{scrartcl}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{algpseudocode}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{setspace}
+\usepackage{sansmathfonts}
+\usepackage{helvet}
+
+\usepackage{amsmath,amssymb,amsthm} 
+
+\renewcommand{\familydefault}{\sfdefault}
+\newcommand{\Machine}[2]{\State \textbf{machine} #1 \textbf{on input} #2:}
+\newcommand{\Reject}{\State \textbf{reject}}
+\newcommand{\Accept}{\State \textbf{accept}}
+\newcommand{\encode}[1]{\langle #1 \rangle}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+
+\onehalfspacing
+\begin{document}
+\section{Question 1}
+In increasing order of growth, we have: $100n^2, n^{10}, (log\ n)^{log\ n}, n^{log\ n}, (n^2)^{log\ n}, (1.1)^n$. No two have the same order of growth.
+
+\section{Question 2}
+First an informal description of the simulation: we note that a two-side unbounded Turing machine will only ever have examined a finite portion of its tapes. This suggests that we could simulate a two-side unbounded Turing machine with a standard Turing machine by reproducing it's actions, but only ever storing the visited window of the simulated machine's tape. If we try to move to the right of the window, it can easily be extended, and if we try to move to the left of the window, we can move the window one cell over, then extend it by one cell on the left, and continue from there. \\
+More precisely, to simulate a k-tape two-side unbounded Turing machine $M$ with a k-tape standard Turing machine $M_S$, make $M_S$ follow the following algorithm:
+
+\begin{algorithmic}[1]
+    \Machine{$M_S$}{$w$}
+    \State Place a start marker $\vdash$ before $w$ on the first tape, and an end marker $\dashv$ after $w$ on the first tape, placing the read head over the first symbol in $w$. If $w = \epsilon$, treat the first tape like the others, as described in the next step.
+    \State On all other tapes, place the symbols: $\vdash \square \dashv$, where $\square$ is the empty cell symbol, and put the read head on the $\square$.
+    \State Now, begin simulating $M$ on these tapes, until any read head sees either $\vdash$ or $\dashv$, or $M$ halts.
+    \If{any read head sees a $\dashv$}
+        \State Write $\square$ over the $\dashv$.
+        \State Move the read head one cell to the right.
+        \State Write $\dashv$ here.
+        \State Move the read head one cell to the left.
+        \State Go back to step 4, continuing the simulation.
+    \ElsIf{any read head sees a $\vdash$}
+        \State Move the contents of the read head's tape between $\vdash$ and $\dashv$ inclusively one cell to the right, returning the read head to right over $\vdash$.
+        \State Write $\square$ over the $\vdash$.
+        \State Move the read head one cell to the left.
+        \State Write $\vdash$.
+        \State Move the read head one cell to the right.
+        \State Go back to step 4, continuing the simulation.
+    \ElsIf{$M$ has halted and accepted}
+        \Accept
+    \ElsIf{$M$ has halted and rejected}
+        \Reject
+    \EndIf
+\end{algorithmic}
+
+\section{Question 3}
+In all the questions below, I assume that the total Turing-machines $M_1$ and $M_2$ decide languages $L_1$ and $L_2$; for each of the required sets I will construct a total Turing-machine $M$ that will decide the set:
+
+\subsection{Part (i)}
+\begin{algorithmic}[1]
+    \Machine{$M$}{$s$}
+    \State Simulate $M_1$ on $s$
+    \State Simulate $M_2$ on $s$
+    \If{any accepted}
+        \Accept
+    \Else
+        \Reject
+    \EndIf
+\end{algorithmic}
+
+\begin{theorem}
+    $M$ is total.
+\end{theorem}
+\begin{proof}
+    As $M_1$ and $M_2$ are total, the simulations in steps $2$ and $3$ must finish whatever the value of $s$. As all the other steps obviously finish, and as $M$ accepts or rejects whatever the result of the test in step 4, $M$ will either accept or reject for all values of $s$. So $M$ is total.
+\end{proof}
+
+\begin{theorem}
+    $L(M) = L(M_1) \cup L(M_2)$
+\end{theorem}
+\begin{proof}
+    By double inclusion:
+    \begin{itemize}
+        \item If $x \in L(M)$, then $M$ must have accepted in step 5. But then, either $M_1$ or $M_2$ accepted $x$. So $x \in L(M_1) \cup L(M_2)$.
+        \item If $x \in L(M_1) \cup L(M_2)$, then $x$ is accepted by one of $M_1$ or $M_2$. Thus, as $M$ cannot possibly reject at line 7, and as $M$ is total and thus must either accept or reject, $M$ must accept. So $x \in L(M)$.
+    \end{itemize}
+\end{proof}
+
+\subsection{Part (ii)}
+\begin{algorithmic}[1]
+    \Machine{$M$}{$s$}
+    \State Simulate $M_1$ on $s$
+    \State Simulate $M_2$ on $s$
+    \If{both accepted}
+        \Accept
+    \Else
+        \Reject
+    \EndIf
+\end{algorithmic}
+
+\begin{theorem}
+    $M$ is total.
+\end{theorem}
+\begin{proof}
+    Precisely as the proof of \textbf{Theorem 1}
+\end{proof}
+
+\begin{theorem}
+    $L(M) = L(M_1) \cap L(M_2)$
+\end{theorem}
+\begin{proof}
+    By double inclusion:
+    \begin{itemize}
+        \item If $x \in L(M)$, then $M$ must have accepted in step 5. But then, both $M_1$ and $M_2$ accepted $x$. So $x \in L(M_1) \cap L(M_2)$.
+        \item If $x \in L(M_1) \cap L(M_2)$, then $x$ is accepted by both of $M_1$ and $M_2$. Thus, as $M$ cannot possibly reject at line 7, and as $M$ is total and thus must either accept or reject, $M$ must accept. So $x \in L(M)$.
+    \end{itemize}
+\end{proof}
+
+\subsection{Part (iii)}
+\begin{algorithmic}[1]
+    \Machine{$M$}{$s$}
+    \State Simulate $M_1$ on $s$
+    \If{it accepted}
+        \Reject
+    \Else
+        \Accept
+    \EndIf
+\end{algorithmic}
+
+\begin{theorem}
+    $M$ is total.
+\end{theorem}
+\begin{proof}
+    Since $M_1$ is total, step 1 finishes. Since all other steps obviously finish, and $M$ accepts or rejects regardless of the result of the test in step 3, $M$ will either accept or reject regardless of the value of $s$. So $M$ is total.
+\end{proof}
+
+\begin{theorem}
+    $L(M) = \overline{L(M_1)}$
+\end{theorem}
+\begin{proof}
+    By double inclusion:
+    \begin{itemize}
+        \item If $x \in L(M)$, then the test in line 3 must fail. Thus, $M_1$ must fail to accept $x$, and so $x \notin L(M_1)$ i.e. $x \in \overline{L(M_1)}$.
+        \item If $x \in \overline{L(M_1)}$, then $x \notin L(M_1)$, and so $M_1$ fails to accept $x$. This means that $M$ cannot possibly reject on line 4, and since $M$ is total ant thus must either accept or reject, $M$ must accept. So $x \in L(M)$.
+    \end{itemize}
+\end{proof}
+
+\subsection{Part (iv)}
+\begin{algorithmic}[1]
+    \Machine{$M$}{$s$}
+    \For{$(p, q) \in \{(x, y) | x \in L_1, y \in L_2, xy = s\}$}
+        \State Simulate $M_1$ on $p$
+        \State Simulate $M_2$ on $q$
+        \If{Both accepted}
+            \Accept
+        \EndIf
+    \EndFor
+    \Reject
+\end{algorithmic}
+
+\begin{theorem}
+    $M$ is total.
+\end{theorem}
+\begin{proof}
+    $M$ is total as:
+    \begin{itemize}
+        \item The \textbf{for} on step 2 runs for at most $|s| + 1$ iterations i.e. it runs for a finite number of iterations.
+        \item Steps 3 and 4 must finish, since they consist of simulating total Turing-machines.
+        \item Steps 5, 6, 9 finish.
+    \end{itemize}
+    And, regardless of the number of iterations of the \textbf{for}, or of the result of the test on step 5, $M$ must either accept or reject (due to step 9), for any value of $s$. So $M$ is total.
+\end{proof}
+
+\begin{theorem}
+    $L(M) = L(M_1);L(M_2)$
+\end{theorem}
+\begin{proof}
+    By double inclusion:
+    \begin{itemize}
+        \item If $s \in L(M)$, then at some point $M$ must accept on step 5. This implies that, for some $(p, q)$, we have that $pq = s$, $M_1$ accepts $p$, and $M_2$ accepts $q$. This implies, by definition, that $s \in L(M_1);L(M_2)$.
+        \item If $s \in L(M_1);L(M_2)$, then $s = pq$ for some $p \in L(M_1), q \in L(M_2)$. But then, $M$ cannot possibly reject $s$, as by the time $M$ would potentially reject $s$,$M$ should already have tried $(p, q)$ in the \textbf{for}-loop, and have accepted. So, as $M$ is total, and thus must either accept or reject any input, $M$ must accept $s$. So $s \in L(M)$.
+    \end{itemize}
+\end{proof}
+
+\subsection{Part (v)}
+\begin{algorithmic}[1]
+    \Machine{$M$}{$s$}
+    \If{$s = \epsilon$}
+        \Accept.
+    \EndIf
+    \For{$(w_1,...,w_k) \in \{ (s_1, ..., s_k) : s_1 ... s_k = s, s_i \in \Sigma^+, i = 1 ... k\}$}
+        \State Simulate $M_1$ on $w_1, ...., w_k$
+        \If{all accepted}
+            \Accept
+        \EndIf
+    \EndFor
+    \Reject
+\end{algorithmic}
+
+\begin{theorem}
+    $M$ is total.
+\end{theorem}
+\begin{proof}
+    $M$ is total as:
+    \begin{itemize}
+        \item The \textbf{for} on step 5 runs for at most $2^{|s| - 1}$ iterations i.e. it runs for a finite number of iterations.
+        \item Step 6 must finish, since it consists of simulating total Turing-machines.
+        \item All other steps finish.
+    \end{itemize}
+    And, regardless of the number of iterations of the \textbf{for}, or of the result of the tests on steps 2 and 7, $M$ must either accept or reject (due to step 10), for any value of $s$. So $M$ is total.
+\end{proof}
+\begin{theorem}
+    $L(M) = L(M_1)^*$
+\end{theorem}
+\begin{proof}
+    By double inclusion:
+    \begin{itemize}
+        \item If $x \in L(M)$, then $M$ either accepts on line 3 or accepts on line 7. So, either $x = \epsilon$, or, for some values of $w_1, ..., w_k \in \Sigma^+$ we have that $w_1 ... w_k = x$ and $M_1$ accepts $w_1, ..., w_k$ i.e. $w_1, ..., w_k \in L(M_1)$. But in either case $x \in L(M_1)^*$.
+        \item If $x \in L(M_1)^*$, then either $x = \epsilon$ or $x = w_1 ... w_k$ for some $w_1, ..., w_k \in L(M_1)$. But this means that $M$ cannot possibly reject $x$, as by the time it would have rejected $x$, it either would have needed to previously accept $x$ on line 3 (if $x = \epsilon$), or on line 8 (if $x = w_1 ... w_k$). So, as $M$ is total, $M$ must accept $x$, and so, $x \in L(M)$.
+    \end{itemize}
+\end{proof}
+
+\section{Question 4}
+
+\begin{theorem}
+    Given a machine $M_H$ that decides \textsc{Halting}, and a machine $M$ that accepts $L$, then a machine $M_T$ can be constructed that decides $L$ (this directly implies that \textsc{Halting} is R.E. complete).
+\end{theorem}
+\begin{proof}
+    Consider the following machine:
+\begin{algorithmic}[1]
+    \Machine{$M_T$}{$s$}
+    \State Simulate $M_H$ on $\encode{M, s}$.
+    \If{$M_H$ accepted}
+        \State Simulate $M$ on $s$.
+        \State Accept/reject if and only if $M$ accepted/rejected.
+    \Else
+        \Reject
+    \EndIf
+\end{algorithmic}
+    Now note that $M_T$ is total, as:
+    \begin{itemize}
+        \item Step 2 must finish, as $M_H$ is a decider, and thus total.
+        \item Step 4 must finish if executed, as it is only executed if $M_H$ accepts $\langle M, s \rangle$ i.e. if $M$ will halt on input $s$.
+        \item All other steps finish.
+        \item Regardless of the result of the test on line 3, $M$ will certainly either accept or reject.
+    \end{itemize}
+    Also note that $L(M_T) = L(M)$, as:
+\begin{itemize}
+    \item If $s \in L(M_T)$, then $M_T$ accepted $s$ on line $5$, and so $M$ accepts $s$. So $s \in L(M)$.
+    \item If $s \notin L(M_T)$, then, as $M_T$ is total, $M_T$ must reject $s$. But then, either $M$ rejects $s$ (if $M_T$ rejected on line 5), or $M_H$ rejects $\encode{M, s}$ i.e. $M$ does not halt on $s$ (if $M_T$ rejected on line 7), so in either case, $M$ does not accept $s$, and so $s \notin L(M)$.
+\end{itemize}
+    So $M_T$ is the desired machine.
+\end{proof}
+
+\section{Question 5}
+\begin{theorem}
+    \textsc{Emptiness} is undecidable.
+\end{theorem}
+\begin{proof}
+    To show this, I construct a mapping reduction from \textsc{Halting} to $\overline{\textsc{Emptiness}}$. First, for each Turing-machine $M$ and string $x$, consider the machine $N_{\encode{M, x}}$, defined as follows:
+    
+\begin{algorithmic}[1]
+    \Machine{$N_{\encode{M, x}}$}{$s$}
+    \State Simulate $M$ on $x$ for $|s|$ steps.
+    \If{$M$ has halted within these steps}
+        \Accept
+    \EndIf
+    \Reject
+\end{algorithmic}
+
+    Note that $M$ will halt on input $x$ if and only if $N_{\encode{M, x}}$ has a non-empty language (*), as:
+    \begin{itemize}
+        \item If $M$ halts on input $x$, it must do so after some number of steps $n$. This implies that any string of at least $n$ characters is accepted by $N_{\encode{M, x}}$, and thus this machine has non-empty language.
+        \item If $N_{\encode{M, x}}$ accepts some string $s$, then it must accept $s$ on line 4. This implies that $M$ halts on input $x$ after at most $|s|$ steps.
+    \end{itemize}
+    Let $M_0$ be a Turing-machine that accepts no strings. Now define $f : \Sigma^* \rightarrow \Sigma^*$ by:
+    \begin{equation}
+        f(w) =
+        \begin{cases*}
+            \encode{N_{\encode{M, x}}} & if $w = \encode{M, x}$ for some Turing-machine $M$ and string $x$\\
+            \encode{M_0}               & otherwise
+        \end{cases*}
+    \end{equation}
+    Note that $w \in \textsc{Halting} \iff f(w) \in \overline{\textsc{Emptiness}}$, as:
+    \begin{itemize}
+        \item If $w \in \textsc{Halting}$, then $w = \encode{M, x}$ for some Turing-machine $M$ and some string $x$ on which $M$ halts. So by definition $f(w) = \encode{N_{\encode{M, x}}}$. By (*), as $M$ halts on $w$, we have that $N_{\encode{M, x}}$ has non-empty language. So $f(w) = \encode{N_{\encode{M, x}}} \in \overline{\textsc{Emptiness}}$.
+        \item If $w \notin \textsc{Halting}$, there are two cases:
+            \begin{itemize}
+                \item If $w = \encode{M, x}$ for some Turing-machine $M$ and some string $x$ on which $M$ does not halt, then $f(w) = \encode{N_{\encode{M, x}}}$. By (*), as $M$ does not halt on $x$, $N_{\encode{M, x}}$ has $\emptyset$ as its language. So $f(w) = \encode{N_{\encode{M, x}}} \in \textsc{Emptiness}$, and thus $f(w) \notin \overline{\textsc{Emptiness}}$.
+                \item Otherwise, $w$ is not of the form $\encode{M, x}$ for any Turing-machine $M$ and string $x$, and so $f(w) = \encode{M_0}$. As $M_0$ has empty language by definition, $f(w) = \encode{M_0} \in \textsc{Emptiness}$, and thus $f(w) \notin \overline{\textsc{Emptiness}}$.
+            \end{itemize}
+    \end{itemize}
+    So, as $f$ is computable, $\textsc{Halting} \leq_m \overline{\textsc{Emptiness}}$. This implies that, as \textsc{Halting} is undecideable, so is $\overline{\textsc{Emptiness}}$. By the contrapositive of part (iii) of question 3, $\textsc{Emptiness}$ is also undecidable.
+\end{proof}
+
+\section{Question 6}
+    I assume that this question refers to one-tape Turing machines, as it talks about a the Turing machine's "tape", as opposed to "tapes" -- however, the argument generalises to multi-tape Turing machines.
+\begin{lemma}
+    A (one-tape) polynomially bounded Turing-machine $M$ run on a string $w$ has a finite number of possible configurations.
+\end{lemma}
+\begin{proof}
+    Note that a configuration for a one-tape Turing machine consists of the tape contents, the current head position, and the current state. Now, supposing that $M$ is polynomially bounded by $f$, has a tape alphabet $\Gamma$, and state set $Q$, we note that:
+    \begin{itemize}
+        \item The tape contents belong to $\{ s \in \Gamma^* : |s| \leq f(|w|) \}$, and this set is finite; in particular it has size $\sum_{i = 0}^{f(|w|)} |\Gamma| ^ i$.
+        \item The state belongs to the finite set $Q$.
+        \item The tape head position belongs to the finite set $\{1, 2, ..., f(|w|)\}$.
+    \end{itemize}
+    This, overall, implies that the Turing machine's configurations belong to a finite set, of size $(\sum_{i = 0}^{f(|w|)}|\Gamma|^i) * |Q| * f(|w|)$.
+\end{proof}
+
+\begin{theorem}
+    Suppose $M$ is a (one-tape) polynomially bounded Turing-machine, which uses no more than $f(|w|)$ cells on its tape on input $w$, for some polynomial $f$. Then we can decide if $M$ halts.
+\end{theorem}
+\begin{proof}
+    Consider the following Turing-machine:
+\begin{algorithmic}[1]
+    \Machine{$M_H$}{$\langle M, x \rangle$, where $M$ is polynomially bounded}
+    \State Initialize a simulation $S$ of $M$ on $x$ without running it.
+    \Repeat
+        \State Store a finite representation of the configuration of $S$ \footnote{This is possible as $S$'s configuration is characterised by a finite amount of information: the part of the tape currently written on, the tape position, and the current state}.
+        \State Advance $S$ by a step.
+        \If{$S$ has halted}
+            \Accept
+        \ElsIf{$S$ has entered a configuration it has already been in before}
+            \Reject
+        \EndIf
+    \Until{forever} 
+\end{algorithmic}
+    First: $M_H$ is total. To see why, suppose that $M_H$ were to run forever on some input $\encode{M, x}$. This implies that $M$ will not halt when run on $x$ (as $M_H$ never accepts on line 7), and that $M$ never enters the same configuration twice (as $M_H$ never rejects on line 9). Thus, when run on $x$, $M$ will enter an infinite number of different configurations. But this contradicts the previous lemma about polynomially bounded Turing-machines. So, our supposition is false, and $M_H$ is total. \\
+
+    Now I show that $M_H$ accepts $\encode{M, x}$ if and only if $M$ halts when run on $x$, where $M$ is a polynomially bounded Turing machine and $x$ a string:
+    \begin{itemize}
+        \item If $M_H$ accepts $\langle M, x \rangle$, then the condition on line 5 must at some point be satisfied. Thus $M$ must halt when run on $x$.
+        \item If $M$ halts when run on $x$, then $M$ can never enter the same configuration twice (as this would imply an infinite loop), and thus $M_H$ can never reject on line 9. As $M_H$ is total, it must thus accept $\encode{M, x}$.
+    \end{itemize}
+    So, $M_H$ decides the halting problem for polynomially bounded Turing machines.
+\end{proof}
+
+\section{Question 7}
+
+\begin{theorem}
+    If \textsc{Clique} can be solved in time $T(n)$, where $n$ is the number of nodes of the input graph, then \textsc{Opt-Clique} can be solved in $O(n^c\ T(n))$ for some $c \in \mathbb{N}$.
+\end{theorem}
+\begin{proof}
+    Supposing that $G$'s nodes are taken from the set $\{1, ..., n\}$, consider the following algorithm for \textsc{Opt-Clique}:
+    \begin{algorithmic}[1]
+        \Function{\textsc{Opt-Clique}}{$G$}
+        \State $i \gets 1$
+        \While{ $G$ has a clique of size at least $i+1$ } \Comment checked using \textsc{Clique}
+            \State $i \gets i+1$
+        \EndWhile
+        \For{ $j \gets 1, 2, ..., n$ }
+            \State $G' \gets G \setminus \{ j \}$ \Comment i.e. $G$ but without node $j$.
+            \If{ $G'$ has clique of size at least $i$ } \Comment checked using \textsc{Clique}
+                \State $G \gets G'$
+            \EndIf
+        \EndFor
+        \State \Return G
+        \EndFunction
+    \end{algorithmic}
+    To show correctness:
+    \begin{itemize}
+        \item Let $G_0$ denote the initial value of $G$.
+        \item After the \textbf{while} loop, $i$ will equal the size of the maximal clique of $G = G_0$. This can be shown using the following invariant: "$G$ contains a clique of size at least $i$". Let $m$ denote the size of this maximal clique.
+        \item As $G$ is initially a subgraph of $G_0$ (as they are initially equal), and is only ever assigned subgraphs of itself, $G$ will always be a subgraph of $G_0$.
+        \item As $G$ initially contains a clique of size at least $m$, and is only ever assigned graphs that contain cliques of size at least $m$ ($=i$), $G$ will always contains a clique of size at least $m$.
+        \item As $G$ initially has no cliques of size larger than $m$, and removing nodes from $G$ cannot possibly introduce any new cliques, $G$ can never have a clique larger than $m$.
+        \item From the previous two results, the size of the maximal clique of $G$ is $m$ at all times during execution.
+        \item I want to show that after the \textbf{for} loop, $G$ will contain at most $m$ nodes. Let $G_1$ be the value of $G$ at the end of the \textbf{for} loop. Suppose, for contradiction, that it contains strictly more than $m$ nodes. We know that the size of $G_1$'s maximal clique is $m$; now, let $K$ be one such clique. Since $K$ is a subgraph of $G_1$, $K$ has $m$ nodes, and $G_1$ has more than $m$ nodes, thus there must exist some node $x$ that belongs to $G_1$ but not to $K$. However, $x$ being in $G_1$ contradicts the construction of the algorithm, because $x$ should have been removed by the \textbf{for} loop when $j = x$ (since, at this point in the \textbf{for} loop, removing $j$ keeps $K$ in $G$, so at this point $G'$ contains $K$ i.e. a clique of size $i$ $(= m)$). This contradiction implies that our supposition is false i.e. that $G_1$ contains at most $m$ nodes.
+        \item So, overall, at the point where we return $G$, $G$ is a subgraph of $G_0$, $G$ contains a clique of size at least $m$, and $G$ has at most $m$ nodes. This implies that $G$ is a clique of $G_0$ of size $m$. Since the size of the maximal clique of $G_0$ is $m$, this implies that $G$ is a maximal clique of $G_0$. So it is appropriate to return $G$.
+    \end{itemize}
+    To find the complexity of the algorithm, note:
+    \begin{itemize}
+        \item The \textbf{while} loop's number of iterations is bounded above by the size of the maximal clique of $G_0$. Also, the size of the maximal clique of $G_0$ is at most the number of nodes of $G_0$.. Since $G_0$ has $n$ nodes, this means that the \textbf{while} loop runs at most $n$ times.
+        \item The \textbf{for} loop runs $n$ times.
+        \item Line 2 is done in $O(1)$.
+        \item Line 3 is done in $O(T(n))$, and is repeated at most $n$ times. It thus costs $O(n T(n))$ overall.
+        \item Line 4 is done in $O(1)$ and is repeated at most $n$ times. It thus costs $O(n)$ overall.
+        \item Line 7 can be implemented in $O(n^2)$ in the worst case, for common representations of graphs (i.e. adjacency lists or adjacency matrices), and is repeated $n$ times. It thus costs $O(n^3)$ overall.
+        \item Line 8 is done in $O(T(n))$ and is repeated $n$ times. It thus costs $O(n T(n))$ overall.
+        \item Line 9 can be done in $O(1)$, and is repeated $n$ times at most. It thus costs $O(n)$ overall.
+    \end{itemize}
+    So overall we have cost $O(n^3 + n T(n))$, but, since both terms of this sum are asymptotically bounded above by $n^2 T(n)$ (as $T(n) \geq n \geq 0$ and so $n^2 * T(n) \geq n^2 * n = n^3$ and $n^2 * T(n) \geq n * T(n)$), the overall cost is also $O(n^2 T(n))$, as desired.
+\end{proof}
+
+NB: The linear search on line 3 can be replaced by a binary search, but, due to the check on line 8, this does not improve the complexity of the algorithm.
+
+
+
+\end{document}

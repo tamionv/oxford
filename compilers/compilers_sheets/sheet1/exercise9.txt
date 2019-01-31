@@ -1,0 +1,8 @@
+(a)
+After having scanned a year, say:
+1999
+
+And, by looking at the look-ahead, noted that it contains a comma, we cannot decide whether to reduce our year into a years symbol (which is appropriate if the string where, say, '1999, "Colin Firth"'), or whether to shift by a character (which is appropriate if the string is, say, '1999, 1998, "Colin Firth"').
+
+(c)
+Yes, something like [0-9]+ can recognize years, and something like "[a-zA-Z ]+" can recognize the names of the actors ; all that remains is to discard the interspersed commas, which is easily acchieved by adding an extra rule that matches ,

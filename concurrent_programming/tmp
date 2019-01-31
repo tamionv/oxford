@@ -1,0 +1,270 @@
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+& LD x &0 \\
+\hline
+& ST x & 4 \\
+\hline
+LD x & & 4 \\
+\hline
+ST x & & 5 \\
+\hline
+LD x & & 5 \\
+\hline
+ST x & & 7 \\
+\hline
+\end{tabular}
+\\
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+& LD x &0 \\
+\hline
+LD x & & 0 \\
+\hline
+& ST x & 4 \\
+\hline
+ST x & & 1 \\
+\hline
+LD x & & 1 \\
+\hline
+ST x & & 3 \\
+\hline
+\end{tabular}
+\\
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+LD x & & 0 \\
+\hline
+& LD x &0 \\
+\hline
+& ST x & 4 \\
+\hline
+ST x & & 1 \\
+\hline
+LD x & & 1 \\
+\hline
+ST x & & 3 \\
+\hline
+\end{tabular}
+\\
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+& LD x &0 \\
+\hline
+LD x & & 0 \\
+\hline
+ST x & & 1 \\
+\hline
+& ST x & 4 \\
+\hline
+LD x & & 4 \\
+\hline
+ST x & & 6 \\
+\hline
+\end{tabular}
+\\
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+LD x & & 0 \\
+\hline
+& LD x &0 \\
+\hline
+ST x & & 1 \\
+\hline
+& ST x & 4 \\
+\hline
+LD x & & 4 \\
+\hline
+ST x & & 6 \\
+\hline
+\end{tabular}
+\\
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+LD x & & 0 \\
+\hline
+ST x & & 1 \\
+\hline
+& LD x &1 \\
+\hline
+& ST x & 5 \\
+\hline
+LD x & & 5 \\
+\hline
+ST x & & 7 \\
+\hline
+\end{tabular}
+\\
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+& LD x &0 \\
+\hline
+LD x & & 0 \\
+\hline
+ST x & & 1 \\
+\hline
+LD x & & 1 \\
+\hline
+& ST x & 4 \\
+\hline
+ST x & & 3 \\
+\hline
+\end{tabular}
+\\
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+LD x & & 0 \\
+\hline
+& LD x &0 \\
+\hline
+ST x & & 1 \\
+\hline
+LD x & & 1 \\
+\hline
+& ST x & 4 \\
+\hline
+ST x & & 3 \\
+\hline
+\end{tabular}
+\\
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+LD x & & 0 \\
+\hline
+ST x & & 1 \\
+\hline
+& LD x &1 \\
+\hline
+LD x & & 1 \\
+\hline
+& ST x & 5 \\
+\hline
+ST x & & 3 \\
+\hline
+\end{tabular}
+\\
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+LD x & & 0 \\
+\hline
+ST x & & 1 \\
+\hline
+LD x & & 1 \\
+\hline
+& LD x &1 \\
+\hline
+& ST x & 5 \\
+\hline
+ST x & & 3 \\
+\hline
+\end{tabular}
+\\
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+& LD x &0 \\
+\hline
+LD x & & 0 \\
+\hline
+ST x & & 1 \\
+\hline
+LD x & & 1 \\
+\hline
+ST x & & 3 \\
+\hline
+& ST x & 4 \\
+\hline
+\end{tabular}
+\\
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+LD x & & 0 \\
+\hline
+& LD x &0 \\
+\hline
+ST x & & 1 \\
+\hline
+LD x & & 1 \\
+\hline
+ST x & & 3 \\
+\hline
+& ST x & 4 \\
+\hline
+\end{tabular}
+\\
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+LD x & & 0 \\
+\hline
+ST x & & 1 \\
+\hline
+& LD x &1 \\
+\hline
+LD x & & 1 \\
+\hline
+ST x & & 3 \\
+\hline
+& ST x & 5 \\
+\hline
+\end{tabular}
+\\
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+LD x & & 0 \\
+\hline
+ST x & & 1 \\
+\hline
+LD x & & 1 \\
+\hline
+& LD x &1 \\
+\hline
+ST x & & 3 \\
+\hline
+& ST x & 5 \\
+\hline
+\end{tabular}
+\\
+\begin{tabular}{|ll|l|}
+\hline
+Thread of p & Thread of q & Value of x after operation \\
+\hline
+LD x & & 0 \\
+\hline
+ST x & & 1 \\
+\hline
+LD x & & 1 \\
+\hline
+ST x & & 3 \\
+\hline
+& LD x &3 \\
+\hline
+& ST x & 7 \\
+\hline
+\end{tabular}
+\\

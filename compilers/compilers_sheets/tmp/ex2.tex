@@ -1,0 +1,21 @@
+Assume pointers are 4 bytes and aligned to 4 bytes, and integers are 4 bytes and aligned to 4 bytes. \\
+The record layout will be thus:
+\begin{itemize}
+\item 4 bytes for \texttt{data}
+\item 4 bytes for \texttt{next}
+\end{itemize}
+and the record will be 4 byte aligned. \\
+
+Suppose that the stack layout is thus:
+
+\begin{itemize}
+\item at fp - 8, the second local variable byte (supposijng it is 4 bytes long)
+\item at fp - 4, the first local variable (supposing it is 4 bytes long)
+\item at fp, the dynamic link
+\item at fp + 4, the return address
+\item at fp + 8, the beginning of the procedure currenty being run
+\item at fp + 12, the static link
+\item at fp + 16, the first argument
+\item at fp + 20, the second argument
+\item ...
+\end{itemize}

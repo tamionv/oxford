@@ -1,0 +1,167 @@
+\section{Problem 7}
+
+\subsection{a}
+An abstract syntax tree type that would work for the first construct is:
+
+\begin{lstlisting}[language=Ml]
+type expr = (* a type for expressions *)
+
+type stmt = 
+    WhileStmt of (expr, stmt) list
+    | (* all other constructs in the language, including a Seq statement *)
+\end{lstlisting}
+
+One for the second construct is:
+
+\begin{lstlisting}[language=Ml]
+type stmt =
+    LoopStmt of stmt
+    | ExitStmt
+    | (* all other constructs in the language, including a Seq statement*)
+
+\end{lstlisting}
+
+Production rules for the first are:
+
+\begin{lstlisting}[language=Ml]
+expr: /* recognizes a expression */
+
+stmts:
+    stmt { Seq [$1] }
+    | stmts SEMICOLON stmt { Seq [$1, $3] }
+
+elseif_list:
+    END { [] }
+    | ELSEIF expr DO stmts elseif_list { ($2, $4) :: $5 }
+
+stmt:
+    WHILE expr DO stmts elseif_list { WhileStmt (($2, $4) :: $5) }
+    | /* ... other control structures and statements ... */
+
+\end{lstlisting}
+
+and for the second are:
+
+\begin{lstlisting}[language=Ml]
+
+expr: /* recognizes a epxression */
+
+stmts:
+    stmt { Seq [$1] }
+    | stmts SEMICOLON stmt { Seq [$1, $3] }
+
+stmt:
+    LOOP stmts END { LoopStmt($2) }
+    | EXIT { ExitStmt }
+    | /* ... Many other control structures ... */
+
+\end{lstlisting}
+
+\subsection{b}
+
+I assume that we have syntax simmilar to Keiko for our machine, and a \texttt{Ocaml} type that represents this code. Then, this generates the while:\\
+
+\begin{lstlisting}[language=Ml]
+gen_cond c tlab flab = (* generates code that, if c evaluates to true,
+                         * jumps to tlab, and otherwise jumps to flab *)
+
+gen_stmt = function
+    WhileStmt ls -> 
+        let first_lab = label ()
+        and make_branch (expr, ast)
+            = let lab1 = label () and lab2 = label () in
+                SEQ [ gen_cond lab1 lab2 ; LABEL lab1
+                    ; get_stmt ast ; JUMP first_lab
+                    ; LABEL lab2 ]
+        and branches = SEQ (List.map make_branch ls)
+        in  SEQ [ LABEL first_lab ; branches ]
+    | (* all other language constructs *)
+\end{lstlisting}
+
+And this generates the loop:\\
+\begin{lstlisting}[language=Ml]
+gen_stmt where
+        (* where is an option that might contain
+         * a label placed after our current loop
+         
+         * and contains nothing otherwise and contains nothing otherwise *)
+    = function
+     ExitStmt -> (match where with
+        None -> failwith "Exit not within a loop"
+        | Some lab -> JUMP lab)
+    | LoopStmt a ->
+        let lab1 = label () and lab2 = label () in
+        SEQ [ LABEL lab1 ; gen_stmt (Some lab2) a
+            ; JUMP lab1 ; LABEL lab2 ]
+    | (* all other language constructs *)
+\end{lstlisting}
+
+\subsection{c}
+
+Code for the first variant:
+
+\ASMEnv{
+    \ASMRow{LABEL L1}{}
+    \ASMRow{LDLW -4}{}
+    \ASMRow{LDLW -8}{}
+    \ASMRow{JGT L2}{if x $>$ y go to first branc}
+    \ASMRow{JUMP L3}{jump to second branch}
+    \ASMRow{LABEL L2}{first branch}
+    \ASMRow{LDLW -4}{}
+    \ASMRow{LDLW -8}{}
+    \ASMRow{MINUS}{}
+    \ASMRow{STLW -4}{}
+    \ASMRow{JUMP L1}{end of first branch}
+    \ASMRow{LABEL L3}{beginning of the second branch condition}
+    \ASMRow{LDLW -4}{}
+    \ASMRow{LDLW -8}{}
+    \ASMRow{JLT L4}{if x $<$ y jump to second branch}
+    \ASMRow{JUMP L5}{jump to end}
+    \ASMRow{LABEL L4}{second branch}
+    \ASMRow{LDLW -8}{}
+    \ASMRow{LDLW -4}{}
+    \ASMRow{MINUS}{}
+    \ASMRow{STLW -8}{}
+    \ASMRow{JUMP L1}{jump back to beginning}
+    \ASMRow{LABEL L5}{}
+}
+\ASMEnv{
+    \ASMRow{LABEL L1}{}
+    \ASMRow{LDLW -4}{}
+    \ASMRow{LDLW -8}{}
+    \ASMRow{JGT L3}{if x $>$ y go to then part}
+    \ASMRow{JUMP L5}{go to elseif test}
+    \ASMRow{LABEL L3}{then part}
+    \ASMRow{LDLW -4}{}
+    \ASMRow{LDLW -8}{}
+    \ASMRow{MINUS}{}
+    \ASMRow{STLW -4}{}
+    \ASMRow{JUMP L4}{jump to end of if-elseif-else}
+    \ASMRow{LABEL L5}{elseif test}
+    \ASMRow{LDLW -4}{}
+    \ASMRow{LDLW -8}{}
+    \ASMRow{JLT L6}{if x $<$ y jump to elseif part}
+    \ASMRow{JUMP L7}{Jump to else part}
+    \ASMRow{LABEL L6}{elseif part}
+    \ASMRow{LDLW -8}{}
+    \ASMRow{LDLW -4}{}
+    \ASMRow{MINUS}{}
+    \ASMRow{STLW -8}{}
+    \ASMRow{JUMP L8}{Jump to end of elseif-else}
+    \ASMRow{LABEL L7}{else part}
+    \ASMRow{JUMP L2}{Exit statement}
+    \ASMRow{JUMP L8}{Jump to end of elseif-else}
+    \ASMRow{LABEL L8}{end of elseif-else}
+    \ASMRow{LABEL L4}{end of if-elseif-else}
+    \ASMRow{JUMP L1}{}
+    \ASMRow{LABEL L2}{}
+}
+
+\subsection{d}
+
+Some rules that would help are: \\
+\texttt{JUMP a; JUMP b} $\rightarrow$ \texttt{JUMP a} \\
+\texttt{JGT a; JUMP b ; LABEL a} $\rightarrow$ \texttt{JLT b} \textit{with similar rules for other conditional jumps, provided a appears nowhere else} \\
+\texttt{LABEL a; LABEL b} $\rightarrow$ \texttt{LABEL a} \textit{substituting a for b everywhere else} \\
+\texttt{JUMP a; LABEL a} $\rightarrow$ \texttt{LABEL a} \\
+\texttt{LABEL a} $\rightarrow$ \texttt{nothing} \textit{supposing that a appears nowhere else}

@@ -1,0 +1,86 @@
+\subsection{}
+Suppose x is at offset -4 from the frame pointer and y is at offset -8 from the frame pointer. \\
+Code without movm:
+
+\begin{lstlisting}
+ldr r0, [fp, #-8]
+str r0, [fp, #-4]
+\end{lstlisting}
+
+Code with movm:
+
+\begin{lstlisting}
+sub r0, fp, #8
+sub r1, fp, #4
+movm [r1], [r0]
+\end{lstlisting}
+
+So under the assumptions given, the code with movm is 50\% worse than the code without it.
+
+\subsection{}
+Suppose x and y are local pointers to integers, again at offsets -4 and -8, and we want to compile \texttt{*x := *y}. \\
+Code without movm:
+
+\begin{lstlisting}
+ldr r0, [fp, #-8]
+ldr r1, [fp, #-4]
+ldr r0, [r0]
+str r0, [r1]
+\end{lstlisting}
+
+Code with movm:
+
+\begin{lstlisting}
+ldr r0, [fp, #-8]
+ldr r1, [fp, #-4]
+movm [r1], [r0]
+\end{lstlisting}
+
+\subsection{}
+Figure 14.2 seems to have been moved, becoming figure 8.5. \\
+To add movm into the grammar we need to add the following rule:
+
+stmt $\rightarrow$ $\langle$ STOREW, $\langle$ LOADW, reg1 $\rangle$, reg2 $\rangle$         \texttt{\{movm [reg1] [reg2]\}}
+
+(i.e. if we know how to calculate two addresses in registers, then we can assign one address' value to the other using a \texttt{movm} instruction)
+
+\subsection{}
+
+Suppose we consider the following sequence of Keiko instructions:
+
+\asmenv{
+    \asmr{LOCAL 16}{}
+    \asmr{LOADW}{}
+    \asmr{GLOBAL \_a}{}
+    \asmr{LOCAL 20}{}
+    \asmr{LOADW}{}
+    \asmr{OFFSET}{}
+    \asmr{STOREW}{}
+}
+
+Such code would be useful for storing a procedure's first parameter in a word of a global array, whose index corresponds to the second parameter of the procedure.
+The greedy instruction selection algorithm would produce the following suboptimal code (which corresponds to tiling 1 of diagram 5):
+
+\begin{lstlisting}
+add r0, fp, #16
+ldr r1, =_a
+ldr r2, [fp, #20]
+add r1, r1, r2
+movm [r1], [r0]
+\end{lstlisting}
+
+Whereas the following sequence of instructions (which corresponds to tiling 2 of diagram 5) is better:
+
+\begin{lstlisting}
+ldr r0, [fp, #16]
+ldr r1, =_a
+ldr r2, [fp, #20]
+str r0, [r1, r2]
+\end{lstlisting}
+
+So the greedy selection algorithm will not always generate correct code.
+
+\subsection{}
+
+I was unable to find the definition of "cost vectors", but I assume that they are vectors $v_i$ associated with each node $i$ that contain the minimal number of tiles needed to make the subtree rooted at node $i$ match any particular symbol.
+On this assumption, I computed these vectors for the trees of the indicated statements, in a manner simmilar to the dynamic programming algorithm in 1. I wrote these vectors in diagrams 6 and 7. Using this information, at each node, we can calculate the total cost if we use any particular rule on the root, and thus we can select the rule that will certainly minimise the number of instructions used overall. Applying this recursively, we get the optimal tilings.

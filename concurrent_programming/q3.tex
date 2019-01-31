@@ -1,0 +1,48 @@
+Suppose that process \texttt{p} executes \texttt{LD x; INC x; ST x; LD x; ADD x 2; ST x} and \texttt{q} executes \texttt{LD x; ADD x 4; ST x}. The time at which \texttt{INC}'s and \texttt{ADD}'s happen does not affect the result of the interleaving, so I omit them. Also, I consider interleavings that differ only by a permutation of adjacent loads in different threads as being the equivalent. Thus, the following distinct interleavings are possible: \\ \\
+
+\texttt{
+\begin{tabular}{lllllll}
+    p() & & & LD x & ST x & LD x & ST x \\
+    q() & LD x & ST x & & & & \\
+    value of x: & 0 & 4 & 4 & 5 & 5 & 7 \\
+\hline
+    p() & & LD x & & ST x & LD x & ST x \\
+    q() & LD x & & ST x & & & \\
+    value of x: & 0 & 0 & 4 & 1 & 1 & 3 \\
+\hline
+    p() & & & LD x & ST x & LD x & ST x \\
+    q() & LD x & ST x & & & & \\
+    value of x: & 0 & 4 & 4 & 5 & 5 & 7 \\
+\hline
+    p() & & LD x & ST x & & LD x & ST x \\
+    q() & LD x & & & ST x & & \\
+    value of x: & 0 & 0 & 1 & 4 & 4 & 6 \\
+\hline
+    p() &LD x & ST x & & & LD x & ST x \\
+    q() &   & & LD x & ST x & & \\
+    value of x: & 0 & 1 & 1 & 5 & 5 & 7 \\
+\hline
+    p() & & LD x & ST x & LD x & & ST x \\
+    q() & LD x & & & & ST x & \\
+    value of x: & 0 & 0 & 1 & 1 & 4 & 3 \\
+\hline
+    p() &LD x & ST x & LD x & & & ST x \\
+    q() &   & & & LD x & ST x & \\
+    value of x: & 0 & 1 & 1 & 1 & 5 & 3 \\
+\hline
+    p() & & LD x & ST x & LD x & ST x & \\
+    q() & LD x & & & & & ST x \\
+    value of x: & 0 & 0 & 1 & 1 & 3 & 4 \\
+\hline
+    p() &LD x & ST x & & LD x & ST x & \\
+    q() &   & & LD x & & & ST x \\
+    value of x: & 0 & 1 & 1 & 1 & 3 & 5 \\
+\hline
+    p() &LD x & ST x & LD x & ST x & & \\
+    q() &   & & & & LD x & ST x \\
+    value of x: & 0 & 1 & 1 & 3 & 3 & 7 \\
+\end{tabular}
+}
+\\
+
+Thus there are 10 different interleavings, which can give 4 different values: 4, 5, 6, 7.

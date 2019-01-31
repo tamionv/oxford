@@ -1,0 +1,9 @@
+The code that implements this section of code generation is listed below:
+\begin{lstlisting}
+    | <BINOP Times, t1, t2> ->
+        (* The mul instruction needs both operands in registers *)
+        let v1 = e_reg t1 anyreg in
+        let v2 = e_reg t2 anyreg in
+        gen_reg "mul" [r; v1; v2]
+\end{lstlisting}
+The condition is enforced by recursively calling e\_reg on t1 and t2, as these calls generate code that places these operands in registers.

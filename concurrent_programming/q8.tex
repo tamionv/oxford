@@ -1,0 +1,9 @@
+To achieve this:
+\begin{enumerate}
+\item Sort $a$.
+\item Instantiate some number of workers.
+\item Split $b$ into a number of chunks equal to the number of available workers.
+\item Send each worker a chunk of $b$.
+\item Each worker now finds, for each $x$ in its chunk of $b$, the number of times $x$ appears in $a$, using binary search.
+\item Each worker sends it's result back to the controller, which sums these to find the overall result.
+\end{enumerate}

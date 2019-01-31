@@ -1,0 +1,21 @@
+Assume that both pointers and integers are 4 bytes long and are aligned to 4 bytes. \\
+The record layout will be thus:
+\begin{itemize}
+\item 4 bytes for \texttt{data}
+\item 4 bytes for \texttt{next}
+\end{itemize}
+and the record will be 4 byte aligned. \\
+
+One possible layout for the stack frame of $sum$ is:
+
+\begin{itemize}
+\item at fp + 16, the parameter $p$
+\item at fp + 12, the static link
+\item at fp + 8, the code adress where $sum$ begins.
+\item at fp + 4, the return address
+\item at fp, the dynamic link
+\item at fp - 4, the pointer $q$
+\item at fp - 8, the integer $s$
+\end{itemize}
+
+Where fp is the frame pointer.

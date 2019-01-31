@@ -1,0 +1,13 @@
+digraph {
+    rankdir=RL;
+	S	 [label=S, xlabel="h = 9"];
+	A	 [label=A, xlabel="h = 1"];
+	S -> A	 [label=4];
+	B	 [ label=B, xlabel="h = 7"]
+	S -> B	 [label=2]
+	C	 [ label=C, xlabel="h = 4"]
+	A -> C	 [label=2]
+	B -> A	 [label=1]
+	G	 [height=0.5, xlabel="h = 0"]
+	C -> G	 [label=4 ]
+}

@@ -1,0 +1,22 @@
+The following is a Keiko instruction sequence that implements the given statements:
+
+\asmenv{
+    \asmr{Instruction}{Stack after instruction}
+    \asmr{LOCAL -8}{\&s}
+    \asmr{LOADW}{s}
+    \asmr{LOCAL -4}{s; \&q}
+    \asmr{LOADW}{s; q}
+    \asmr{LOADW}{s; q$\uparrow$.data}
+    \asmr{PLUS}{s + q$\uparrow$.data}
+    \asmr{LOCAL -8}{s + q$\uparrow$.data; \&s}
+    \asmr{STOREW}{}
+    \asmr{LOCAL -4}{\&q}
+    \asmr{LOADW}{q}
+    \asmr{CONST 4}{q; 4}
+    \asmr{OFFSET}{q + 4}
+    \asmr{LOADW}{q$\uparrow$.next}
+    \asmr{LOCAL -4}{q$\uparrow$.next; \&q}
+    \asmr{STOREW}{}
+}
+
+The associated trees are found in diagram 2.

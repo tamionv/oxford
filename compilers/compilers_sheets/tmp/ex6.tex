@@ -1,0 +1,6 @@
+Considering the entire loop leads us to holding $q$ and $p$ in registers, say $r0$ and $r1$. This means that we no longer need to load the value of q and the value of s from memory, nor do we need to store their new values in memory, until the end of the loop. This leads to the following code inside the loop:
+
+\begin{lstlisting}
+add r1, r1, [r0]
+ldr r0, [r0, #4]
+\end{lstlisting}

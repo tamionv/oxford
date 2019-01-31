@@ -1,0 +1,96 @@
+\section{Problem 3.2}
+
+This design change has several parts that need to be treated:
+\begin{itemize}
+\item First, we need to add new tokens \texttt{LOCAL} (matching only \texttt{local}), and \texttt{IN} (matching only \texttt{in}).
+\item Second, we need to add statements of type \texttt{LocalDecl of decls list * stmt} to the abstract syntax. No change is needed to type \texttt{program}.
+\item Third, we need to add a new rule to the grammar: \texttt{stmt: LOCAL decls IN stmt END \{LocalDecl($2, $4)\}}.
+\item Fourth, we add a new scoping check (i.e. we check that all variables are only used in blocks where they are declared).
+\item
+\begin{minipage}[t]{\linewidth}
+    Now, we make an intermediate translation, with the eventual goal of transforming local statements into equivalent global declarations.  First, dealing with name conflicts (i.e. redeclaring a variable in a more deeply nested block). I think the easiest and cleanest way to deal with scope is with name mangling -- i.e. we have a translation step that transforms:
+\begin{lstlisting}[language=pascal]
+local var y : t;
+in
+    stmt[y]
+end
+\end{lstlisting}
+
+into
+\begin{lstlisting}[language=pascal]
+local var mangledy : t;
+in
+    stmt[mangledy]
+end
+\end{lstlisting}
+where stmt[t] is notation for a statement that contains some variable name t, stmt[u] means that same statement just with all unbound appearences of t replaced by u, and mangledy is some string that is distinct from all other variable names in the program (one such mangling scheme would be to append the number of \texttt{local} blocks already processed when the variable is declared, or to append a long random string). By unbound I mean that appearences within another \texttt{local} block of the same variable, where the variable was re-declared in that local block, do not count. Note that this transformation does not change the semantics of the program.
+\end{minipage}
+\item After applying the previous translation, note that since all the variables now have distinct names, we could just have well as declared all of them globally. This suggests what we must now do; more precisely, move all declarations from \texttt{local} blocks into the global declaration.
+\item Now, as we know that variables are used only in the correct scopes, and also as the syntax tree has the same form as a syntax tree without local blocks, we can simply use the old checking, annotating and code generating functions.
+\end{itemize}
+
+% We can implement these in a single pass function \texttt{translate}, defined below
+% 
+% 
+% \begin{lstlisting}[language=Ml]
+% 
+% open List
+% open List.Assoc
+% 
+% let translate (Program (decls, stmt)) =
+%     let local_counter = ref 0 in
+%     and mangle str = str ^ string_of_int !local_counter
+%     and mangle_decl (Decl (names, pt))
+%         = Decl (map (function n -> { x_name = mangle n.x_name
+%                                    ; n.x_line
+%                                    ; n.x_def
+%                                    })
+%                     , pt)
+%     and mangle_decls = map mangle_decl
+%     and change_context context decls =
+%         let all_names = map (fun n -> n.x_name) (concat (fst (split decls)))
+%         and context_diff = map (fun x -> (x, mangle x)) all_names in
+%         foldright add context_diff context
+%     and apply_context_to_string context str =
+%         if mem str context then find str context else str
+%     and apply_context_to_name n str =
+%         { x_name = apply_context_to_string context n.x_name
+%         ; x_line = n.x_line
+%         ; x_def = n.x_def
+%         } in
+%     (* tr_stmt takes a context : list (string * string) of name changes,
+%      * and a stmt and returns a list of declarations to be included at the
+%      * beginning of the block and the new statement, as a pair*)
+%     (* tr_expr tkaes a context and an expr and returns the
+%      * expr with variables names mangled w.r.t. the context *)
+%     let rec tr_expr context
+%         = function
+%         Variable x -> apply_context_to_name x context
+%         | Constant x -> Constant x
+%         | Monop (w, e1) -> Monop (w, tr_expr context e1)
+%         | Binop (w, e1, e2) -> Binop (w, tr_expr context e1
+%                                      , tr_expr context e2) in
+%     let rec tr_stmt context
+%         = function
+%         Local (decls, stmt) ->
+%             let new_context = change_context context decls
+%             and mangled_decls = mangle_decls decls
+%             and (ret_decls, ret_stmt) = tr_stmt new_context stmt
+%             in (mangled_decls @ ret_decls, ret_stmt)
+%         | (* very many tedious repetitive cases, all of which
+%            * boil down to simply recursivly applying tr_stmt
+%            * or tr_expr ; some examples included for illustration *)
+%         | IfStmt (test, thenpt, elsept) ->
+%             let test_tr = tr_expr test
+%             and (thenpt_decls, thenpt_tr) = tr_stmt thenpt
+%             and (elsept_decls, elsept_tr) = tr_stmt elsept
+%             in (thenpt_decls @ elsept_decls
+%                , IfStmt(test_tr, thenpt_tr, elsept_tr))
+%         | WhileStmt (test, body) ->
+%             let test_tr = tr_expr test
+%             and (body_decls, body_tr) = tr_stmt body
+%             in (body_decls, WhileStmt(test_tr, body_tr)) in
+%     let (newdecls, newstmt) = tr_stmt [] stmt in
+%         Program (decls @ newdecls, newstmt)
+% 
+% \end{lstlisting}

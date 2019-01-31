@@ -1,0 +1,55 @@
+TODO: for list of call by name, all are call by name
+TODO: by name contains variable in the scope of the called function
+
+To add call by name:
+1. change lex
+2. add parser token
+3. add NParamDef to Dict.def_kind
+4. tree needs no changes
+5. Compiler needs following rule for formal_decl:
+
+  | RIGHTARROW ident_list COLON typexpr { VarDecl (NParamDef, $2, $4) }
+
+5.5 add code in do_alloc and such to make nparams alloc 2 words like pparams
+5.6
+6. extra semantic checks in check_heading to insure that => x has x == integer and that PParams' cannot contain this as an argument (including in nested pparams's i.e. third order functions); add check_param, and List.map check_param fparams, and a function contains_call_by_name
+7. make it so that name parmas take the same space as closures
+8. OTHER CHANGES (check diff)
+9. NOTE: NParams cannot be assigned to
+
+
+8. TESTS:
+TODO: test that checks all stated errors
+TODO: test with their thjinkgs
+TODO: test with nested functions with by-name parametrs
+
+To add continue statements:
+
+1. changed the lexer to lex the continue token
+2. added a continue token to the parser
+3. added a continue statement to stmt_guts, in tree.ml, tree.mli
+4. added rules to parse the continue statement
+5. added code to check that emits an error if we see a continue statement not inside a loop, by adding a boolean variable "in_loop" to check_stmt that tells us whether we are in a loop or not
+6. added code to tgen.ml (we don't need code in tran.ml yet) that adds labels immediately befoere the condition (in the case of repeat loops) / the increment (in the case of for loops)
+7. added code to tgen.ml that remembers, when compiling statements, the label to which we should jump if we continue
+-. added case to fStmt
+-. added code to tgen.ml that actually generates a continue statement
+8. tested
+
+to test continue statements:
+
+1. added test while_continue that tests that continue statements within while statements work correctly
+2. added test for_continue
+3. added test repeat_continue
+4. modified testing makefile so that compiler errors can also be tested
+5. added test bare_continue
+6. added test multiple_continues
+7. added test nested_continue
+
+
+- Added jensen tests and gps tests
+- changed everything so that anonymous functions get done "offline"
+- changed level+1 to level
+- added "by_name_to_by_name"
+- added "by_ref_to_by_name"
+-- added "local_to_by_name"

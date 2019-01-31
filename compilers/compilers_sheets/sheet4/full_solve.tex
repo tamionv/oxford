@@ -1,0 +1,114 @@
+\documentclass[a4paper,11pt]{scrartcl}
+\usepackage[margin=1in]{geometry}
+\usepackage{listings}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage[x11names,dvipsnames,table]{xcolor}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{calc}
+\setlength{\parindent}{0pt}
+
+\newcommand{\asmenv}[1] {
+    \rowcolors{1}{lightgray}{white}
+    \begin{longtable}{ll}
+    #1
+    \end{longtable}
+}
+
+\newcommand{\asmr}[2] {
+    \texttt{#1} & \text{#2} \\
+}
+
+\newcounter{stkctr}
+\newcommand{\stackenv}[1]{
+    \setcounter{stkctr}{0}
+    \rowcolors{1}{lightgray}{white}
+    \begin{tabular}{|c|l|l|l|}
+        \hline
+    Frame & Adress & Contents & Meaning \\
+    \hline
+    #1
+    \end{tabular}
+}
+
+\newcommand{\stackframe}[2]{
+    \texttt{#1} & & & \\
+    #2
+    \hline
+}
+
+\newcommand{\stackrow}[2]{
+    & \texttt{b - \thestkctr} & \texttt{#1} & \texttt{#2} \addtocounter{stkctr}{4} \\
+}
+
+\newcommand{\Proof}[2]{
+    \rowcolors{1}{white}{white}
+    \begin{minipage}[t]{\linewidth}
+    \underline{Claim:}
+    #1
+    \end{minipage}
+
+    \leavevmode
+    \\
+
+    \begin{minipage}[t]{\linewidth}
+    \underline{Proof:}
+    #2 $\blacksquare$
+    \end{minipage}
+
+    \leavevmode
+    \\
+}
+
+\newcommand{\Induction}[2]{
+    \rowcolors{1}{white}{white}
+
+    \textit{BC:}
+    \newlength{\bcaselen}
+    \settowidth{\bcaselen}{\textit{BC:....}}
+    \begin{minipage}[t]{\linewidth-\bcaselen}
+    #1
+    \end{minipage}
+
+    \leavevmode
+    \\
+
+    \textit{IS:}
+    \newlength{\indsteplen}
+    \settowidth{\indsteplen}{\textit{IS:....}}
+    \begin{minipage}[t]{\linewidth-\indsteplen}
+    #2
+    \end{minipage}
+
+    \leavevmode
+    \\
+}
+
+\begin{document}
+\noindent
+
+Note: I've done all of the text in latex, but all diagrams by hand in an annexe.
+
+\section{}
+\input{ex1}
+\section{}
+\input{ex2}
+\section{}
+\input{ex3}
+\section{}
+\input{ex4}
+\section{}
+\input{ex5}
+\section{}
+\input{ex6}
+\section{}
+\input{ex7}
+\section{}
+\input{ex8}
+\section{}
+\input{ex9}
+\section{}
+\input{ex10}
+\end{document}

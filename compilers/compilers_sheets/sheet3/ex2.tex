@@ -1,0 +1,66 @@
+\section{4.2}
+\subsection{(i)}
+
+\lstset{escapeinside={(*}{*)}}
+\begin{lstlisting}[language=Pascal]
+
+proc flip(*$^0$*)(x(*$^1$*): integer): integer;
+    proc flop(*$^1$*)(y(*$^2$*): integer): integer;
+    begin
+        if y(*$^2$*) = 0 then return 1 else return flip(*$^0$*)(y(*$^2$*)-1) + x(*$^1$*) end
+    end;
+begin
+    if x(*$^1$*) = 0 then return 1 else return 2 * flop(*$^1$*)(x(*$^1$*)-1) end
+end;
+\end{lstlisting}
+\newpage
+\subsection{(ii)}
+
+Let \texttt{L1} be the position in the program right after the call of flip in main, \texttt{L2} be the position in the program right after the call of flip in flop, and \texttt{L3} be the position in the program right after the call of flop.
+Let \texttt{@x} be the position of a procedure x.
+
+\stackenv{
+    \stackframe{main}{
+        \stackrow{?}{Arbitrary static link for main}
+        \stackrow{@main}{Procedure adress}
+        \stackrow{?}{Arbitrary return adress for main}
+        \stackrow{?}{Arbitrary dynamic link for main}
+    }
+    \stackframe{flip}{
+        \stackrow{4}{Argument}
+        \stackrow{b - 12}{Static link}
+        \stackrow{@flip}{Procedure adress}
+        \stackrow{L1}{Return adress}
+        \stackrow{b - 12}{Dynamic link}
+    }
+    \stackframe{flop}{
+        \stackrow{3}{Argument}
+        \stackrow{b - 32}{Static link}
+        \stackrow{@flop}{Procedure adress}
+        \stackrow{L3}{Return adress}
+        \stackrow{b - 32}{Dynamic link}
+    }
+    \stackframe{flip}{
+        \stackrow{2}{Argument}
+        \stackrow{b - 12}{Static link}
+        \stackrow{@flip}{Procedure adress}
+        \stackrow{L2}{Return adress}
+        \stackrow{b - 52}{Dynamic link}
+    }
+    \stackframe{flop}{
+        \stackrow{1}{Argument}
+        \stackrow{b - 72}{Static link}
+        \stackrow{@flop}{Procedure adress}
+        \stackrow{L3}{Return adress}
+        \stackrow{b - 72}{Dynamic link}
+    }
+    \stackframe{flip}{
+        \stackrow{0}{Argument}
+        \stackrow{b - 12}{Static link}
+        \stackrow{@flip}{Procedure adress}
+        \stackrow{L2}{Return adress}
+        \stackrow{b - 92}{Dynamic link}
+    }
+}
+
+

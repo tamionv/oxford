@@ -1,0 +1,178 @@
+\documentclass[a4paper,11pt]{scrartcl}
+\usepackage{sansmathfonts}
+\usepackage{inconsolata}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{mathtools}
+\usepackage{setspace}
+\usepackage{color}
+\usepackage{hhline}
+\usepackage[T1]{fontenc} 
+\usepackage[utf8]{inputenc}
+\usepackage{helvet}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{tabularx}
+\usepackage{multicol}
+\usepackage{amsmath,amssymb,amsthm} 
+\renewcommand{\familydefault}{\sfdefault}
+
+\renewcommand{\familydefault}{\sfdefault}
+\newcommand{\Machine}[2]{\State \textbf{machine} #1 \textbf{on input} #2:}
+\newcommand{\Reject}{\State \textbf{reject}}
+\newcommand{\Accept}{\State \textbf{accept}}
+\newcommand{\encode}[1]{\langle #1 \rangle}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+
+\onehalfspacing
+
+\begin{document}
+
+\section*{Question 1}
+
+\subsection*{Part (a)}
+
+\begin{theorem}
+$k-\textsc{Coloring} \leq_p \textsc{Homomorphism}$
+\end{theorem}
+\begin{proof}
+    Let ${K_n}$ be a graph whose nodes are $\{ 1, 2, ..., n \}$, and whose edge set is $\{ \{i, j\} : i, j \in \{1, 2, ..., n \}, i \neq j \}$. Fix $k \in \mathbb{N}$. Also, let $G_0$ and $G_1$ be two non-isomorphic graphs. Now consider the following polynomial-time computable function $f : \Sigma^* \rightarrow \Sigma^*$:
+
+\[
+    f(w) \coloneqq
+    \begin{cases}
+        \encode{G, {K_k}} & \text{, if } w = \encode{G} \\
+        \encode{G_0, G_1} & \text{, otherwise}
+    \end{cases}
+\]
+\end{proof} 
+I will now show that $w \in k-\textsc{Coloring}$ iff. $f(w) \in \textsc{Homomorphism}$:
+\begin{itemize}
+    \item If $w \in k-\textsc{Coloring}$, then $w = \encode{G}$, for some graph $G = (V, E)$, and $G$ admits a $k$-coloring $c : V \rightarrow {1, 2, ..., k}$. Now, this implies that for any edge $\{ v_1, v_2 \} \in E$, we have that $c(v_1) \neq c(v_2)$. But, this implies that $\{ c(v_1), c(v_2) \}$ is an edge of $K_k$! Thus, $c$ is also a homomorphism from $G$ to $K_k$. The existence of such a homomorphism implies that $f(w) = \encode{G, K_k} \in \textsc{Homomorphism}$.
+    \item If $w \notin k-\textsc{Coloring}$, we then have two cases:
+        \begin{itemize}
+            \item If $w = \encode{G}$ for some graph $G = (V, E)$, then $f(w) = \encode{G, K_k}$. Now, I will show that $f(w)$ is not in $\textsc{Homomorphism}$ by contradiction: suppose that $f(w) \in \textsc{Homomorphism}$. This implies that some homomorphism $h : V \rightarrow {1, 2, ..., k}$ exists from $G$ to $K_k$. By the definition of homomorphisms, this means that for all edges $\{ u, v \} \in E$, we have that $\{ h(u), h(v) \}$ is an edge of $K_k$. However, such edges consist of sets of two different nodes; thus, $h(u) \neq h(v)$. This implies that $h$ is also a valid $k$-coloring of $G$. But this contradicts the fact that $\encode{G} = w \notin k-\textsc{Coloring}$. So our supposition is false, and $f(w) \notin \textsc{Homomorphism}$.
+            \item Otherwise, we have that $f(w) = \encode{G_0, G_1}$. Since, by definition, no homomorphism exists from $G_0$ to $G_1$, we have that $f(w) \notin \textsc{Homomorphism}$.
+        \end{itemize}
+        So overall, in this case, $w \notin \textsc{Homomorphism}$.
+\end{itemize}
+Altogether, this means that $k-\textsc{Coloring} \leq_p \textsc{Homomorphism}$.
+
+\subsection*{Part (b)}
+To do this, I show:
+\begin{theorem}
+    $\textsc{Clique} \leq_p \textsc{Homomorphism}$.
+\end{theorem}
+\begin{proof}
+    Use $G_0$, $G_1$ and $K_k$ from the previous proof. Now, define a polynomially computable function $f : \Sigma^* \rightarrow \Sigma^*$ by:
+
+    \[
+        f(w) \coloneqq
+        \begin{cases}
+            \encode{K_k, G} & \text{, if } w = \encode{G, k} \\
+            \encode{G_0, G_1} & \text{, otherwise}
+        \end{cases}
+    \]
+
+    I will now show that $w \in \textsc{Clique}$ iff. $f(w) \in \textsc{Homomorphism}$:
+    \begin{itemize}
+        \item If $w \in \textsc{Clique}$, then $w = \encode{G}$ from some graph $G = (V, E)$ that contains a clique of size $k$; suppose that the clique is formed from nodes $v_1, ..., v_k$. Now, in this case, consider the following function $f : {1, ..., k} \rightarrow V$, defined by $f(x) = v_x$. I now want to show that this defines a homomorphism from $K_k$ to $G$: for any edge $\{ i, j \}$ of $K_k$, with $i, j \in \{ 1, ..., k \}, i \neq j$, since $\{v_1, ..., v_k \}$ is a clique of $G$, we have that $\{ v_i, v_j \} \in E$. So $f$ is indeed a homomorphism from $K_k$ to $G$; and thus, $f(w) = \encode{K_k, G} \in \textsc{Homomorphism}$.
+        \item If $w \notin \textsc{Clique}$, then there are two cases:
+            \begin{itemize}
+                \item $w = \encode{G}$ for some graph $G$ with no clique of size $k$. In this case, I show that no homomorphism from $K_k$ to $G$ exists, by contradiction. Suppose $h : {1, ..., k} \rightarrow V$, a homomorphism between $K_k$ and $G$, exists. Now note that, by the definition of $K_k$, for any $i, j \in {1, ..., k}, i \neq j$, we have that $\{i, j\}$ is an edge of $K_k$. This implies, by the definition of homomorphism, that $\{ f(i), f(j) \} \in E$. Since $E$ can only contain valid edges (i.e. sets of nodes of cardinality 2), this implies that all the values $f(1), ..., f(k)$ are distinct and have edges between them. But this means that $G$ has a clique of size $k$, a contradiction! Thus our supposition is false, and no homomorphism from $K_k$ to $G$ exists. So $f(w) = \encode{K_k, G} \notin \textsc{Homomorphism}$.
+                \item $w \neq \encode{G}$ for any graph $G$. In this case, $f(w) = \encode{G_0, G_1}$; and this in outside of $\textsc{Homomorphism}$ by the definition of $G_0, G_1$.
+            \end{itemize}
+            So overall, in this case, $f(w) \notin \textsc{Homomorphism}$.
+    \end{itemize}
+    Since $f$ is polynomially computable, this implies that $\textsc{Clique} \leq_p \textsc{Homomorphism}$. Since \textsc{Clique} is NP-hard, and \textsc{Homomorphism} is at least as hard as \textsc{Clique}, this implies that \textsc{Homomorphism} is also NP-hard.
+\end{proof}
+\subsection*{Part (c)}
+This would imply that NP is closed under complement, viz:
+\begin{theorem}
+    If $A \in NP$, then $\overline{A} \in NP$.
+\end{theorem}
+\begin{theorem}
+    First, I assume $\textsc{Homomorphism}$ is $NP$. Since I proved earlier that it is NP-hard, this implies that it is NP-complete. I also assume that $\overline{\textsc{3-Coloring}}$ is co-NP complete (the proof for this is identical to the proof that $3-coloring$ is NP complete). Now, for any NP problem $A$ I show that $\overline{A} \leq_p A$, as follows: $\overline{A} \leq_p \overline{\textsc{3-Coloring}} \leq_p \textsc{Homomorphism} \leq_p A$. So, as $A$ is NP, so is $\overline{A}$.
+\end{theorem}
+This implies also that NP = co-NP.
+
+
+\section*{Question 2}
+\subsection*{Part (a)}
+
+\begin{theorem}
+    $P$ is closed under complement.
+\end{theorem}
+\begin{proof}
+    To show this, consider any $L \in P$. By definition, some polynomial time deterministic Turing Machine $M$ must decide $L$. Now, suppose that we were to swap accepting and rejecting states for this deterministic machine, calling the new machine $M'$. Since the machines are deterministic, it is easy to see that $M'$ accepts precisely the complement of the langauge accepted by $M$ i.e. the complement of $L$. This implies that $L \in P$.
+\end{theorem}
+In particular, if $P = NP$, then as $P$ is closed under complement, so is $NP$.
+
+\begin{theorem}
+    Any language in $P$ not equal to $\emptyset$ or $\Sigma^*$ is $P$-complete.
+\end{theorem}
+\begin{theorem}
+    To show this, consider any such language $L$, and take an arbitrary langauge $L_P \in P$. I will show that $L_P \leq_p L$. Since $L \neq \emptyset$ and $L \neq \Sigma^*$, there must be some element in $L$, and some element not in $L$. Thus, w.l.o.g., let $\top \in L$ and $\bottom \notin L$. Now, since $L_P$ is in $P$, this language must be decidable in polynomial time. Thus, there must exist some polynomial time computable function $f$ that satisfies $w \in L_P$ iff. $f(w) = 0$ for all $w \in \Sigma^*$. Now, define $g : \Sigma^* \rightarrow \Sigma^*$ by:
+    \[
+        g(w) \coloneqq
+        \begin{cases}
+            \top &, f(w) = 0 \\
+            \bottom &, \text{otherwise}
+        \end{cases}
+    \]
+Now note that this is a reduction from $L_P$ to $L$, as:
+    \begin{itemize}
+        \item If $w \in L_P$, then $f(w) = 0$, so $g(w) = \top \in L$.
+        \item Otherwise, $f(w) \neq 0$ , so $g(w) = \bottom \notin L$.
+    \end{itemize}
+    So indeed $L_P \leq L$. Overall, applying this to all languages in $L$ gives us that $L$ is $P$-hard; and since $L$ is also in $P$, this implies that it is $P$-complete.
+\end{theorem}
+In particular, if $P = NP$, this implies that all languages in $NP$ are $NP$-complete.
+
+\section*{Question 3}
+\begin{theorem}
+    \textbf{NonTotalSat} is in $NP$.
+\end{theorem}
+\begin{proof}
+    Consider a particular solution for an instance of \textbf{NonTotalSat}. The size of this solution is linear (i.e. polynomial) in terms of the number of variables in the instance, and the solution can be check in polynomial time (by first checking that the solution is non-total in linear time, and then by simply checking that the solution indeed satisfies the instance). This implies that these solutions can serve as polynomial time verifiable certificates for the instances of \textbf{NonTotalSat}. In turn, the existence of such certificates implies that \textbf{NonTotalSat} is $NP$.
+\end{proof}
+
+\begin{theorem}
+    \textbf{NonTotalSat} is $NP-hard$.
+\end{theorem}
+\begin{proof}
+    I show that \textbf{Sat} can be reduced to \textbf{NonTotalSat}, as follows: for any instance $\phi$ of \textbf{Sat}, which contains variables $X_1, ..., X_n$, consider an instance $\phi' = \phi \lor (X_1 \land ... \land X_n \land X_{n+1})$ of \textbf{NonTotalSat}. Note that this is of polynomial size w.r.t. the size of the $\phi$, and moreover it is a valid instance of \textbf{NonTotalSat} since setting $X_1, ..., X_n, X_{n+1}$ to true satisfies $X_1 \land ... \land X_n \land X_{n+1}$, and thus this assignment satisfies $\phi' = \phi \lor (X_1 \land ... \land X_n \land X_{n+1})$. Now, I show that $\phi$ has a satisfying assignment if and only if $\phi'$ has a satisfying assignment that maps some variables to false:
+    \begin{itemize}
+        \item If $\phi$ has a satisfying assignment, say $X_i = a_i$ for some $a_i$'s, for $i = 1, ..., n$, then, by setting $X_i = a_i$ for $i = 1, ..., n$, and setting $X_{n+1}$ to false, we have an assignment that satisfies $\phi'$.
+        \item If $\phi'$ has some satisfying assignment $X_i = a_i$ for $i = 1, ..., n$, for which at least one $a_i$ is false, then this same assignment also satisfies $\phi$, as the assignment cannot satisfy $X_1 \land ... \land X_{n+1}$, since one of these is false, and for it to have satisfied $\phi'$, it must either have satisfied $\phi$ or $X_1 \land ... \land X_{n+1}$.
+    \end{itemize}
+\end{proof}
+
+So, with these results, \textbf{NonTotalSat} is $NP-complete$.
+
+\section*{Question 4}
+\begin{theorem}
+    \textbf{Double Satisfiability} is $NP$.
+\end{theorem}
+\begin{proof}
+    Note that a pair of different satisfying assignments is a polynomial-time verifiable certificate for this set. Thus, this set is $NP$.
+\end{proof}
+
+\begin{theorem}
+    \textbf{Double Satisfiability} is $NP$.
+\end{theorem}
+\begin{proof}
+    I show that \textbf{Sat} can be reduced to \textbf{Double Satisfiability}, as follows: for any instance $\phi$ of \textbf{Sat} that contains variables $X_1, ..., X_n$, consider an instance $\phi' = \phi \lor (X_{n+1} \land \lnot X_{n+1})$ of \textbf{Double Satisfiability}. Note that this is of polynomial size w.r.t the size of $\phi$, and is a valid instance of \textbf{Double Satisfiability}. Now, I show that $\phi$ is satisfiable if and only if $\phi'$ is doubly satisfiable:
+    \begin{itemize}
+        \item If $\phi$ is satisfied by some assignment $X_1 = a_1, ..., X_n = a_n$, then $\phi'$ can be satisfied by at least two assignments, viz.: $X_1 = a_1, ..., X_n = a_n, X_{n+1} = True$, and $X_1 = a_1, ..., X_n = a_n, X_{n+1} = False$.
+        \item If $\phi'$ is satisfied by at least two assignments, then $\phi$ is satisfied by those assignments as well, and thus $\phi$ is satisfiable.
+    \end{itemize}
+\end{proof}
+Thus \textbf{Double Satisfiability} is $NP-complete$.
+
+\section*{Question 5}
+
+
+\end{document}

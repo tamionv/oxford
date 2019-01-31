@@ -1,0 +1,72 @@
+I assume that a is an array of 1 byte characters. Suppose i is at offset -4 from the frame pointer. Then the following is Keiko code that runs the desired statement:
+
+\asmenv{
+    \asmr{GLOBAL \_a}{}
+    \asmr{LOCAL -4}{}
+    \asmr{LOADW}{}
+    \asmr{OFFSET}{}
+    \asmr{LOADW}{}
+    \asmr{LOCAL -4}{}
+    \asmr{LOADW}{}
+    \asmr{PLUS}{}
+    \asmr{GLOBAL \_a}{}
+    \asmr{GLOBAL \_a}{}
+    \asmr{LOCAL -4}{}
+    \asmr{LOADW}{}
+    \asmr{OFFSET}{}
+    \asmr{LOADW}{}
+    \asmr{OFFSET}{}
+    \asmr{STOREW}{}
+}
+
+The unoptimised tree is depicted in diagram 8; diagram 9 holds the tree optimised by common subexpression elimination. Both have tiles that correspond to the machine code below. The machine code for the unoptimised tree follows:
+
+\begin{lstlisting}
+ldr r0, =_a
+ldr r1, [fp, #-4]
+ldr r0, [r0, r1]
+ldr r1, [fp, #-4]
+add r0, r0, r1
+ldr r1, =_a
+ldr r2, =_a
+ldr r3, [fp, #-4]
+ldr r2, [r2, r3]
+str r0, [r1, r2]
+\end{lstlisting}
+
+And for the optimised tree:
+
+\begin{lstlisting}
+ldr r0, [fp, #-4]
+ldr r1, =_a
+ldr r2, [r1, r0]
+add r3, r2, r0
+str r3, [r1, r2]
+\end{lstlisting}
+
+If the machine had such an adressing mode, the storing \_a in a register would become pointless, since we only ever use r1 as a base in memory anyway; all other common subexpressions should still be shared. This policy would result in the following code:
+
+\begin{lstlisting}
+ldr r0, [fp, #-4]
+ldr r2, [=_a, r0]
+add r3, r2, r0
+str r3, [=_a, r2]
+\end{lstlisting}
+
+\subsection{}
+
+I assume that x, y and z are not aliases of each other. \\
+Suppose that x, y and z are held at offsets -4, -8 and -12 w.r.t. the frame pointer. Diagram 10 holds the initial trees for this statement, and diagram 11 the trees that result after common subexpression elimination. \\
+This optimisation occurs as follows: while the common subexpression eliminator does a depth first search through the trees, it maintains a hash table that associates each subexpression with the number of times it occurs in the tree, as well as a directed acyclic graph, with one node for each expression, that represents the way expressions depend on each other. Expressions that are referenced multiple times may be stored in temporary variables. When we process a \texttt{STOREW} instruction, in order to make sure that we don't share an expression which used the old value stored at that position, we remove all expressions that reference that memory from the hash table, without removing them from the directed acyclic graph. In order to optimise more, we also add a corresponding \texttt{LOADW} node to the table and the graph, that will produce the value that we have just written. This way we can automatically use the fact that we already have this value in a register, thus avoiding recalculating it. \\
+This is the machine code associated with these trees:
+
+\begin{lstlisting}
+ldr r0, [fp, #-8]
+ldr r1, [fp, #-4]
+sub r1, r1, r0
+str r1, [fp, #-4]
+sub r2, r1, r0
+str r2, [fp, #-8]
+sub r3, r1, r2
+str r3, [fp, #-12]
+\end{lstlisting}

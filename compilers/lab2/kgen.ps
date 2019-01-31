@@ -1,0 +1,1486 @@
+%!PS-Adobe-3.0
+%%Title: kgen.ml
+%%For: tvn
+%%Creator: VIM - Vi IMproved 8.0 (2016 Sep 12)
+%%CreationDate: Tue Nov  6 17:15:55 2018
+%%DocumentData: Clean8Bit
+%%Orientation: Portrait
+%%Pages: (atend)
+%%PageOrder: Ascend
+%%BoundingBox: 59 49 564 800
+%%DocumentMedia: A4 595 842 0 () ()
+%%DocumentNeededResources: font Courier
+%%+ font Courier-Bold
+%%+ font Courier-Oblique
+%%+ font Courier-BoldOblique
+%%DocumentSuppliedResources: procset VIM-Prolog 1.4 1
+%%+ encoding VIM-latin1 1.0 0
+%%Requirements: duplex collate color
+%%EndComments
+%%BeginDefaults
+%%PageResources: font Courier
+%%+ font Courier-Bold
+%%+ font Courier-Oblique
+%%+ font Courier-BoldOblique
+%%PageMedia: A4
+%%EndDefaults
+%%BeginProlog
+%%BeginResource: procset VIM-Prolog
+%%BeginDocument: /usr/share/vim/vim80/print/prolog.ps
+%!PS-Adobe-3.0 Resource-ProcSet
+%%Title: VIM-Prolog
+%%Version: 1.4 1
+%%EndComments
+% Editing of this file is NOT RECOMMENDED.  You run a very good risk of causing
+% all PostScript printing from VIM failing if you do.  PostScript is not called
+% a write-only language for nothing!
+/packedarray where not{userdict begin/setpacking/pop load def/currentpacking
+false def end}{pop}ifelse/CP currentpacking def true setpacking
+/bd{bind def}bind def/ld{load def}bd/ed{exch def}bd/d/def ld
+/db{dict begin}bd/cde{currentdict end}bd
+/T true d/F false d
+/SO null d/sv{/SO save d}bd/re{SO restore}bd
+/L2 systemdict/languagelevel 2 copy known{get exec}{pop pop 1}ifelse 2 ge d
+/m/moveto ld/s/show ld /ms{m s}bd /g/setgray ld/r/setrgbcolor ld/sp{showpage}bd
+/gs/gsave ld/gr/grestore ld/cp/currentpoint ld
+/ul{gs UW setlinewidth cp UO add 2 copy newpath m 3 1 roll add exch lineto
+stroke gr}bd
+/bg{gs r cp BO add 4 -2 roll rectfill gr}bd
+/sl{90 rotate 0 exch translate}bd
+L2{
+/sspd{mark exch{setpagedevice}stopped cleartomark}bd
+/nc{1 db/NumCopies ed cde sspd}bd
+/sps{3 db/Orientation ed[3 1 roll]/PageSize ed/ImagingBBox null d cde sspd}bd
+/dt{2 db/Tumble ed/Duplex ed cde sspd}bd
+/c{1 db/Collate ed cde sspd}bd
+}{
+/nc{/#copies ed}bd
+/sps{statusdict/setpage get exec}bd
+/dt{statusdict/settumble 2 copy known{get exec}{pop pop pop}ifelse
+statusdict/setduplexmode 2 copy known{get exec}{pop pop pop}ifelse}bd
+/c{pop}bd
+}ifelse
+/ffs{findfont exch scalefont d}bd/sf{setfont}bd
+/ref{1 db findfont dup maxlength dict/NFD ed{exch dup/FID ne{exch NFD 3 1 roll
+put}{pop pop}ifelse}forall/Encoding findresource dup length 256 eq{NFD/Encoding
+3 -1 roll put}{pop}ifelse NFD dup/FontType get 3 ne{/CharStrings}{/CharProcs}
+ifelse 2 copy known{2 copy get dup maxlength dict copy[/questiondown/space]{2
+copy known{2 copy get 2 index/.notdef 3 -1 roll put pop exit}if pop}forall put
+}{pop pop}ifelse dup NFD/FontName 3 -1 roll put NFD definefont pop end}bd
+CP setpacking
+(\004)cvn{}bd
+% vim:ff=unix:
+%%EOF
+%%EndDocument
+%%EndResource
+%%BeginResource: encoding VIM-latin1
+%%BeginDocument: /usr/share/vim/vim80/print/latin1.ps
+%!PS-Adobe-3.0 Resource-Encoding
+%%Title: VIM-latin1
+%%Version: 1.0 0
+%%EndComments
+/VIM-latin1[
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+/space /exclam /quotedbl /numbersign /dollar /percent /ampersand /quotesingle
+/parenleft /parenright /asterisk /plus /comma /minus /period /slash
+/zero /one /two /three /four /five /six /seven
+/eight /nine /colon /semicolon /less /equal /greater /question
+/at /A /B /C /D /E /F /G
+/H /I /J /K /L /M /N /O
+/P /Q /R /S /T /U /V /W
+/X /Y /Z /bracketleft /backslash /bracketright /asciicircum /underscore
+/grave /a /b /c /d /e /f /g
+/h /i /j /k /l /m /n /o
+/p /q /r /s /t /u /v /w
+/x /y /z /braceleft /bar /braceright /asciitilde /.notdef
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+/.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef /.notdef
+/space /exclamdown /cent /sterling /currency /yen /brokenbar /section
+/dieresis /copyright /ordfeminine /guillemotleft /logicalnot /hyphen /registered /macron
+/degree /plusminus /twosuperior /threesuperior /acute /mu /paragraph /periodcentered
+/cedilla /onesuperior /ordmasculine /guillemotright /onequarter /onehalf /threequarters /questiondown
+/Agrave /Aacute /Acircumflex /Atilde /Adieresis /Aring /AE /Ccedilla
+/Egrave /Eacute /Ecircumflex /Edieresis /Igrave /Iacute /Icircumflex /Idieresis
+/Eth /Ntilde /Ograve /Oacute /Ocircumflex /Otilde /Odieresis /multiply
+/Oslash /Ugrave /Uacute /Ucircumflex /Udieresis /Yacute /Thorn /germandbls
+/agrave /aacute /acircumflex /atilde /adieresis /aring /ae /ccedilla
+/egrave /eacute /ecircumflex /edieresis /igrave /iacute /icircumflex /idieresis
+/eth /ntilde /ograve /oacute /ocircumflex /otilde /odieresis /divide
+/oslash /ugrave /uacute /ucircumflex /udieresis /yacute /thorn /ydieresis]
+/Encoding defineresource pop
+% vim:ff=unix:
+%%EOF
+%%EndDocument
+%%EndResource
+%%EndProlog
+%%BeginSetup
+595 842 0 sps
+1 nc
+T F dt
+T c
+%%IncludeResource: font Courier
+/_F0 /VIM-latin1 /Courier ref
+/F0 10 /_F0 ffs
+%%IncludeResource: font Courier-Bold
+/_F1 /VIM-latin1 /Courier-Bold ref
+/F1 10 /_F1 ffs
+%%IncludeResource: font Courier-Oblique
+/_F2 /VIM-latin1 /Courier-Oblique ref
+/F2 10 /_F2 ffs
+%%IncludeResource: font Courier-BoldOblique
+/_F3 /VIM-latin1 /Courier-BoldOblique ref
+/F3 10 /_F3 ffs
+/UO -1 d
+/UW 0.5 d
+/BO -2.5 d
+%%EndSetup
+%%Page: 1 1
+%%BeginPageSetup
+sv
+0 g
+F0 sf
+%%EndPageSetup
+F1 sf
+(kgen.ml                                                                       Page 1)59.5 792.4 ms
+F0 sf
+(\(* lab2/kgen.ml *\))59.5 772.4 ms
+(\(* Copyright \(c\) 2017 J. M. Spivey *\))59.5 762.4 ms
+0.498 0.498 0 r
+(open)59.5 742.4 ms
+0 g
+( )s
+0 0.251 0 r
+(Dict)s
+0 g
+( )s
+0.498 0.498 0 r
+(open)59.5 732.4 ms
+0 g
+( )s
+0 0.251 0 r
+(Tree)s
+0 g
+( )s
+0.498 0.498 0 r
+(open)59.5 722.4 ms
+0 g
+( )s
+0 0.251 0 r
+(Keiko)s
+0 g
+( )s
+0.498 0.498 0 r
+(open)59.5 712.4 ms
+0 g
+( )s
+0 0.251 0 r
+(Print)s
+0.498 0.498 0 r
+(let)59.5 692.4 ms
+0 g
+( optflag )s
+0.498 0.498 0 r
+(=)s
+0 g
+( ref false)s
+(\(* |line_number| -- find line number of variable reference *\))59.5 672.4 ms
+0.498 0.498 0 r
+(let)59.5 662.4 ms
+0 g
+( )s
+0.498 0.498 0 r
+(rec)s
+0 g
+( line_number e )s
+0.498 0.498 0 r
+(=)s
+0 g
+(  )59.5 652.4 ms
+0.498 0.498 0 r
+(match)s
+0 g
+( e.e_guts )s
+0.498 0.498 0 r
+(with)s
+0 g
+(      Variable x )59.5 642.4 ms
+0.498 0.498 0 r
+(->)s
+0 g
+( x.x_line)s
+(    )59.5 632.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Sub )s
+0.498 0.498 0 r
+(\()s
+0 g
+(a, e)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+( line_number a)s
+(    )59.5 622.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( )s
+0.498 0.498 0 r
+(_)s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+( 999)s
+(\(* |gen_expr| -- generate code for an expression *\))59.5 602.4 ms
+0.498 0.498 0 r
+(let)59.5 592.4 ms
+0 g
+( )s
+0.498 0.498 0 r
+(rec)s
+0 g
+( gen_expr e )s
+0.498 0.498 0 r
+(=)s
+0 g
+(  )59.5 582.4 ms
+0.498 0.498 0 r
+(match)s
+0 g
+( e.e_guts )s
+0.498 0.498 0 r
+(with)s
+0 g
+(      Variable )59.5 572.4 ms
+0.498 0.498 0 r
+(_)s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+( )s
+0.498 0.498 0 r
+(if)s
+0 g
+( e.e_type )s
+0.498 0.498 0 r
+(<>)s
+0 g
+( Boolean )s
+0.498 0.498 0 r
+(then)s
+0 g
+( SEQ )s
+0.498 0.498 0 r
+([)s
+0 g
+(gen_addr e )s
+0.498 0.498 0 r
+(;)s
+0 g
+( LOADW)s
+0.498 0.498 0 r
+(])s
+0 g
+( )s
+0.498 0.498 0 r
+(else)s
+0 g
+( SEQ )s
+0.498 0.498 0 r
+([)s
+0 g
+(g)s
+(en_addr e)59.5 562.4 ms
+0.498 0.498 0 r
+(;)s
+0 g
+( LOADC)s
+0.498 0.498 0 r
+(])s
+0 g
+(    )59.5 552.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Sub )s
+0.498 0.498 0 r
+(\()s
+0 g
+(v, )s
+0.498 0.498 0 r
+(_\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+( )s
+0.498 0.498 0 r
+(if)s
+0 g
+( e.e_type )s
+0.498 0.498 0 r
+(<>)s
+0 g
+( Boolean )s
+0.498 0.498 0 r
+(then)s
+0 g
+( SEQ )s
+0.498 0.498 0 r
+([)s
+0 g
+(gen_addr e )s
+0.498 0.498 0 r
+(;)s
+0 g
+( LOADW)s
+0.498 0.498 0 r
+(])s
+0 g
+( )s
+0.498 0.498 0 r
+(else)s
+0 g
+( SEQ )s
+0.498 0.498 0 r
+([)s
+0 g
+(g)s
+(en_addr e)59.5 542.4 ms
+0.498 0.498 0 r
+(;)s
+0 g
+( LOADC)s
+0.498 0.498 0 r
+(])s
+0 g
+(    )59.5 532.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Constant )s
+0.498 0.498 0 r
+(\()s
+0 g
+(n, t)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        CONST n)59.5 522.4 ms
+(    )59.5 512.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Monop )s
+0.498 0.498 0 r
+(\()s
+0 g
+(w, e1)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        SEQ )59.5 502.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+(gen_expr e1)s
+0.498 0.498 0 r
+(;)s
+0 g
+( MONOP w)s
+0.498 0.498 0 r
+(])s
+0 g
+(    )59.5 492.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Binop )s
+0.498 0.498 0 r
+(\()s
+0 g
+(w, e1, e2)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        SEQ )59.5 482.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+(gen_expr e1)s
+0.498 0.498 0 r
+(;)s
+0 g
+( gen_expr e2)s
+0.498 0.498 0 r
+(;)s
+0 g
+( BINOP w)s
+0.498 0.498 0 r
+(])s
+0 g
+(\(* |gen_addr| -- generate code to push address of a variable *\))59.5 462.4 ms
+0.498 0.498 0 r
+(and)59.5 452.4 ms
+0 g
+( gen_addr v )s
+0.498 0.498 0 r
+(=)s
+0 g
+(  )59.5 442.4 ms
+0.498 0.498 0 r
+(match)s
+0 g
+( v.e_guts )s
+0.498 0.498 0 r
+(with)s
+0 g
+(      Variable x )59.5 432.4 ms
+0.498 0.498 0 r
+(->)s
+0 g
+(        )59.5 422.4 ms
+0.498 0.498 0 r
+(let)s
+0 g
+( d )s
+0.498 0.498 0 r
+(=)s
+0 g
+( get_def x )s
+0.498 0.498 0 r
+(in)s
+0 g
+(        SEQ )59.5 412.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+(LINE x.x_line)s
+0.498 0.498 0 r
+(;)s
+0 g
+( GLOBAL d.d_lab)s
+0.498 0.498 0 r
+(])s
+0 g
+(    )59.5 402.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Sub )s
+0.498 0.498 0 r
+(\()s
+0 g
+(w, )s
+0.498 0.498 0 r
+({)s
+0 g
+(e_guts )s
+0.498 0.498 0 r
+(=)s
+0 g
+( Constant)s
+0.498 0.498 0 r
+(\()s
+0 g
+(n, )s
+0.498 0.498 0 r
+(_\);)s
+0 g
+( e_type )s
+0.498 0.498 0 r
+(=)s
+0 g
+( )s
+0.498 0.498 0 r
+(_})s
+0 g
+( )s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+( )s
+(        )59.5 392.4 ms
+0.498 0.498 0 r
+(if)s
+0 g
+( n )s
+0.498 0.498 0 r
+(>=)s
+0 g
+( array_size w.e_type )s
+0.498 0.498 0 r
+(then)s
+0 g
+( failwith )s
+0.498 0.251 0.251 r
+("Out of bounds")s
+0 g
+( )s
+0.498 0.498 0 r
+(else)s
+0 g
+(        SEQ )59.5 382.4 ms
+0.498 0.498 0 r
+(\()s
+0 g
+(            )59.5 372.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+(gen_addr w)s
+(            )59.5 362.4 ms
+0.498 0.498 0 r
+(;)s
+0 g
+( CONST )s
+0.498 0.498 0 r
+(\()s
+0 g
+(type_size )s
+0.498 0.498 0 r
+(\()s
+0 g
+(base_type w.e_type)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(*)s
+0 g
+( n)s
+0.498 0.498 0 r
+(\))s
+0 g
+(            )59.5 352.4 ms
+0.498 0.498 0 r
+(;)s
+0 g
+( OFFSET)s
+0.498 0.498 0 r
+(])s
+0 g
+( )s
+0.498 0.498 0 r
+(\))s
+0 g
+(    )59.5 342.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Sub )s
+0.498 0.498 0 r
+(\()s
+0 g
+(w, e)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        SEQ )59.5 332.4 ms
+0.498 0.498 0 r
+(\()s
+0 g
+(            )59.5 322.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+(gen_addr w)s
+(            )59.5 312.4 ms
+0.498 0.498 0 r
+(;)s
+0 g
+( gen_expr e)s
+(            )59.5 302.4 ms
+0.498 0.498 0 r
+(;)s
+0 g
+( CONST )s
+0.498 0.498 0 r
+(\()s
+0 g
+(array_size w.e_type)s
+0.498 0.498 0 r
+(\))s
+0 g
+(            )59.5 292.4 ms
+0.498 0.498 0 r
+(;)s
+0 g
+( BOUND 0)s
+0.498 0.498 0 r
+(])s
+0 g
+(            @)59.5 282.4 ms
+(            )59.5 272.4 ms
+0.498 0.498 0 r
+(\(if)s
+0 g
+( type_size )s
+0.498 0.498 0 r
+(\()s
+0 g
+(base_type w.e_type)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(==)s
+0 g
+( 1)s
+(                )59.5 262.4 ms
+0.498 0.498 0 r
+(then)s
+0 g
+( [])s
+(                )59.5 252.4 ms
+0.498 0.498 0 r
+(else)s
+0 g
+( )s
+(                )59.5 242.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+( CONST )s
+0.498 0.498 0 r
+(\()s
+0 g
+(type_size )s
+0.498 0.498 0 r
+(\()s
+0 g
+(base_type w.e_type)s
+0.498 0.498 0 r
+(\)\))s
+0 g
+(                )59.5 232.4 ms
+0.498 0.498 0 r
+(;)s
+0 g
+( BINOP Times)s
+0.498 0.498 0 r
+(]\))s
+0 g
+(            @)59.5 222.4 ms
+(            )59.5 212.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+( OFFSET)s
+0.498 0.498 0 r
+(]\))s
+0 g
+(    )59.5 202.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( )s
+0.498 0.498 0 r
+(_)s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+( failwith )s
+0.498 0.251 0.251 r
+("gen_addr")s
+0 g
+(\(* |gen_cond| -- generate code for short-circuit condition *\))59.5 182.4 ms
+0.498 0.498 0 r
+(let)59.5 172.4 ms
+0 g
+( )s
+0.498 0.498 0 r
+(rec)s
+0 g
+( gen_cond e tlab flab )s
+0.498 0.498 0 r
+(=)s
+0 g
+(  \(* Jump to |tlab| if |e| is true and |flab| if it is false *\))59.5 162.4 ms
+(  )59.5 152.4 ms
+0.498 0.498 0 r
+(match)s
+0 g
+( e.e_guts )s
+0.498 0.498 0 r
+(with)s
+0 g
+(      Constant )59.5 142.4 ms
+0.498 0.498 0 r
+(\()s
+0 g
+(x, t)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        )59.5 132.4 ms
+0.498 0.498 0 r
+(if)s
+0 g
+( x )s
+0.498 0.498 0 r
+(<>)s
+0 g
+( 0 )s
+0.498 0.498 0 r
+(then)s
+0 g
+( JUMP tlab )s
+0.498 0.498 0 r
+(else)s
+0 g
+( JUMP flab)s
+(    )59.5 122.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Binop )s
+0.498 0.498 0 r
+(\(\()s
+0 g
+(Eq)s
+0.498 0.498 0 r
+(|)s
+0 g
+(Neq)s
+0.498 0.498 0 r
+(|)s
+0 g
+(Lt)s
+0.498 0.498 0 r
+(|)s
+0 g
+(Gt)s
+0.498 0.498 0 r
+(|)s
+0 g
+(Leq)s
+0.498 0.498 0 r
+(|)s
+0 g
+(Geq)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(as)s
+0 g
+( w, e1, e2)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        SEQ )59.5 112.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+(gen_expr e1)s
+0.498 0.498 0 r
+(;)s
+0 g
+( gen_expr e2)s
+0.498 0.498 0 r
+(;)s
+0 g
+(          JUMPC )59.5 102.4 ms
+0.498 0.498 0 r
+(\()s
+0 g
+(w, tlab)s
+0.498 0.498 0 r
+(\);)s
+0 g
+( JUMP flab)s
+0.498 0.498 0 r
+(])s
+0 g
+(    )59.5 92.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Monop )s
+0.498 0.498 0 r
+(\()s
+0 g
+(Not, e1)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        gen_cond e1 flab tlab)59.5 82.4 ms
+(    )59.5 72.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Binop )s
+0.498 0.498 0 r
+(\()s
+0 g
+(And, e1, e2)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        )59.5 62.4 ms
+0.498 0.498 0 r
+(let)s
+0 g
+( lab1 )s
+0.498 0.498 0 r
+(=)s
+0 g
+( label \(\) )s
+0.498 0.498 0 r
+(in)s
+0 g
+(        SEQ )59.5 52.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+(gen_cond e1 lab1 flab)s
+0.498 0.498 0 r
+(;)s
+0 g
+( LABEL lab1)s
+0.498 0.498 0 r
+(;)s
+0 g
+( gen_cond e2 tlab flab)s
+0.498 0.498 0 r
+(])s
+re sp
+%%PageTrailer
+%%Page: 2 2
+%%BeginPageSetup
+sv
+0 g
+F0 sf
+%%EndPageSetup
+F1 sf
+(kgen.ml                                                                       Page 2)59.5 792.4 ms
+F0 sf
+(    )59.5 772.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Binop )s
+0.498 0.498 0 r
+(\()s
+0 g
+(Or, e1, e2)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        )59.5 762.4 ms
+0.498 0.498 0 r
+(let)s
+0 g
+( lab1 )s
+0.498 0.498 0 r
+(=)s
+0 g
+( label \(\) )s
+0.498 0.498 0 r
+(in)s
+0 g
+(        SEQ )59.5 752.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+(gen_cond e1 tlab lab1)s
+0.498 0.498 0 r
+(;)s
+0 g
+( LABEL lab1)s
+0.498 0.498 0 r
+(;)s
+0 g
+( gen_cond e2 tlab flab)s
+0.498 0.498 0 r
+(])s
+0 g
+(    )59.5 742.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( )s
+0.498 0.498 0 r
+(_)s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        SEQ )59.5 732.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+(gen_expr e)s
+0.498 0.498 0 r
+(;)s
+0 g
+( CONST 0)s
+0.498 0.498 0 r
+(;)s
+0 g
+( JUMPC )s
+0.498 0.498 0 r
+(\()s
+0 g
+(Neq, tlab)s
+0.498 0.498 0 r
+(\);)s
+0 g
+( JUMP flab)s
+0.498 0.498 0 r
+(])s
+0 g
+(\(* |gen_stmt| -- generate code for a statement *\))59.5 712.4 ms
+0.498 0.498 0 r
+(let)59.5 702.4 ms
+0 g
+( )s
+0.498 0.498 0 r
+(rec)s
+0 g
+( gen_stmt )s
+0.498 0.498 0 r
+(=)s
+0 g
+(  )59.5 692.4 ms
+0.498 0.498 0 r
+(function)s
+0 g
+(      Skip )59.5 682.4 ms
+0.498 0.498 0 r
+(->)s
+0 g
+( NOP)s
+(    )59.5 672.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Seq stmts )s
+0.498 0.498 0 r
+(->)s
+0 g
+( SEQ )s
+0.498 0.498 0 r
+(\()s
+0 0.251 0 r
+(List)s
+0 g
+(.map gen_stmt stmts)s
+0.498 0.498 0 r
+(\))s
+0 g
+(    )59.5 662.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Assign )s
+0.498 0.498 0 r
+(\()s
+0 g
+(v, e)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        )59.5 652.4 ms
+0.498 0.498 0 r
+(if)s
+0 g
+( v.e_type )s
+0.498 0.498 0 r
+(<>)s
+0 g
+( Boolean)s
+(        )59.5 642.4 ms
+0.498 0.498 0 r
+(then)s
+0 g
+( SEQ )s
+0.498 0.498 0 r
+([)s
+0 g
+(LINE )s
+0.498 0.498 0 r
+(\()s
+0 g
+(line_number v)s
+0.498 0.498 0 r
+(\);)s
+0 g
+( gen_expr e)s
+0.498 0.498 0 r
+(;)s
+0 g
+( gen_addr v)s
+0.498 0.498 0 r
+(;)s
+0 g
+( STOREW)s
+0.498 0.498 0 r
+(])s
+0 g
+(        )59.5 632.4 ms
+0.498 0.498 0 r
+(else)s
+0 g
+( SEQ )s
+0.498 0.498 0 r
+([)s
+0 g
+(LINE )s
+0.498 0.498 0 r
+(\()s
+0 g
+(line_number v)s
+0.498 0.498 0 r
+(\);)s
+0 g
+( gen_expr e)s
+0.498 0.498 0 r
+(;)s
+0 g
+( gen_addr v)s
+0.498 0.498 0 r
+(;)s
+0 g
+( STOREC)s
+0.498 0.498 0 r
+(])s
+0 g
+(    )59.5 622.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Print e )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        SEQ )59.5 612.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+(gen_expr e)s
+0.498 0.498 0 r
+(;)s
+0 g
+( CONST 0)s
+0.498 0.498 0 r
+(;)s
+0 g
+( GLOBAL )s
+0.498 0.251 0.251 r
+("lib.print")s
+0.498 0.498 0 r
+(;)s
+0 g
+( PCALL 1)s
+0.498 0.498 0 r
+(])s
+0 g
+(    )59.5 602.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( Newline )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        SEQ )59.5 592.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+(CONST 0)s
+0.498 0.498 0 r
+(;)s
+0 g
+( GLOBAL )s
+0.498 0.251 0.251 r
+("lib.newline")s
+0.498 0.498 0 r
+(;)s
+0 g
+( PCALL 0)s
+0.498 0.498 0 r
+(])s
+0 g
+(    )59.5 582.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( IfStmt )s
+0.498 0.498 0 r
+(\()s
+0 g
+(test, thenpt, elsept)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        )59.5 572.4 ms
+0.498 0.498 0 r
+(let)s
+0 g
+( lab1 )s
+0.498 0.498 0 r
+(=)s
+0 g
+( label \(\) )s
+0.498 0.498 0 r
+(and)s
+0 g
+( lab2 )s
+0.498 0.498 0 r
+(=)s
+0 g
+( label \(\) )s
+0.498 0.498 0 r
+(and)s
+0 g
+( lab3 )s
+0.498 0.498 0 r
+(=)s
+0 g
+( label \(\) )s
+0.498 0.498 0 r
+(in)s
+0 g
+(        SEQ )59.5 562.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+(gen_cond test lab1 lab2)s
+0.498 0.498 0 r
+(;)s
+0 g
+( )s
+(          LABEL lab1)59.5 552.4 ms
+0.498 0.498 0 r
+(;)s
+0 g
+( gen_stmt thenpt)s
+0.498 0.498 0 r
+(;)s
+0 g
+( JUMP lab3)s
+0.498 0.498 0 r
+(;)s
+0 g
+(          LABEL lab2)59.5 542.4 ms
+0.498 0.498 0 r
+(;)s
+0 g
+( gen_stmt elsept)s
+0.498 0.498 0 r
+(;)s
+0 g
+( LABEL lab3)s
+0.498 0.498 0 r
+(])s
+0 g
+(    )59.5 532.4 ms
+0.498 0.498 0 r
+(|)s
+0 g
+( WhileStmt )s
+0.498 0.498 0 r
+(\()s
+0 g
+(test, body)s
+0.498 0.498 0 r
+(\))s
+0 g
+( )s
+0.498 0.498 0 r
+(->)s
+0 g
+(        )59.5 522.4 ms
+0.498 0.498 0 r
+(let)s
+0 g
+( lab1 )s
+0.498 0.498 0 r
+(=)s
+0 g
+( label \(\) )s
+0.498 0.498 0 r
+(and)s
+0 g
+( lab2 )s
+0.498 0.498 0 r
+(=)s
+0 g
+( label \(\) )s
+0.498 0.498 0 r
+(and)s
+0 g
+( lab3 )s
+0.498 0.498 0 r
+(=)s
+0 g
+( label \(\) )s
+0.498 0.498 0 r
+(in)s
+0 g
+(        SEQ )59.5 512.4 ms
+0.498 0.498 0 r
+([)s
+0 g
+(JUMP lab2)s
+0.498 0.498 0 r
+(;)s
+0 g
+( LABEL lab1)s
+0.498 0.498 0 r
+(;)s
+0 g
+( gen_stmt body)s
+0.498 0.498 0 r
+(;)s
+0 g
+( )s
+(          LABEL lab2)59.5 502.4 ms
+0.498 0.498 0 r
+(;)s
+0 g
+( gen_cond test lab1 lab3)s
+0.498 0.498 0 r
+(;)s
+0 g
+( LABEL lab3)s
+0.498 0.498 0 r
+(])s
+(let)59.5 482.4 ms
+0 g
+( gen_decl )s
+0.498 0.498 0 r
+(\()s
+0 g
+(Decl )s
+0.498 0.498 0 r
+(\()s
+0 g
+(xs, t)s
+0.498 0.498 0 r
+(\)\))s
+0 g
+( )s
+0.498 0.498 0 r
+(=)s
+0 g
+(  )59.5 472.4 ms
+0 0.251 0 r
+(List)s
+0 g
+(.iter )s
+0.498 0.498 0 r
+(\(fun)s
+0 g
+( x )s
+0.498 0.498 0 r
+(->)s
+0 g
+(      )59.5 462.4 ms
+0.498 0.498 0 r
+(let)s
+0 g
+( d )s
+0.498 0.498 0 r
+(=)s
+0 g
+( get_def x )s
+0.498 0.498 0 r
+(in)s
+0 g
+(      )59.5 452.4 ms
+0.498 0.498 0 r
+(let)s
+0 g
+( s )s
+0.498 0.498 0 r
+(=)s
+0 g
+( type_size t )s
+0.498 0.498 0 r
+(in)s
+0 g
+(      printf )59.5 442.4 ms
+0.498 0.251 0.251 r
+("GLOVAR $ $\\n")s
+0 g
+( )s
+0.498 0.498 0 r
+([)s
+0 g
+(fStr d.d_lab)s
+0.498 0.498 0 r
+(;)s
+0 g
+( fNum s)s
+0.498 0.498 0 r
+(]\))s
+0 g
+( xs)s
+(\(* |translate| -- generate code for the whole program *\))59.5 422.4 ms
+0.498 0.498 0 r
+(let)59.5 412.4 ms
+0 g
+( translate )s
+0.498 0.498 0 r
+(\()s
+0 g
+(Program )s
+0.498 0.498 0 r
+(\()s
+0 g
+(ds, ss)s
+0.498 0.498 0 r
+(\)\))s
+0 g
+( )s
+0.498 0.498 0 r
+(=)s
+0 g
+( )s
+(  )59.5 402.4 ms
+0.498 0.498 0 r
+(let)s
+0 g
+( code )s
+0.498 0.498 0 r
+(=)s
+0 g
+( gen_stmt ss )s
+0.498 0.498 0 r
+(in)s
+0 g
+(  printf )59.5 392.4 ms
+0.498 0.251 0.251 r
+("PROC MAIN 0 0 0\\n")s
+0 g
+( [])s
+0.498 0.498 0 r
+(;)s
+0 g
+(  )59.5 382.4 ms
+0 0.251 0 r
+(Keiko)s
+0 g
+(.output )s
+0.498 0.498 0 r
+(\(if)s
+0 g
+( )s
+0.498 0.498 0 r
+(!)s
+0 g
+(optflag )s
+0.498 0.498 0 r
+(then)s
+0 g
+( )s
+0 0.251 0 r
+(Peepopt)s
+0 g
+(.optimise code )s
+0.498 0.498 0 r
+(else)s
+0 g
+( code)s
+0.498 0.498 0 r
+(\);)s
+0 g
+(  printf )59.5 372.4 ms
+0.498 0.251 0.251 r
+("RETURN\\n")s
+0 g
+( [])s
+0.498 0.498 0 r
+(;)s
+0 g
+(  printf )59.5 362.4 ms
+0.498 0.251 0.251 r
+("END\\n\\n")s
+0 g
+( [])s
+0.498 0.498 0 r
+(;)s
+0 g
+(  )59.5 352.4 ms
+0 0.251 0 r
+(List)s
+0 g
+(.iter gen_decl ds)s
+re sp
+%%PageTrailer
+%%Trailer
+%%Pages: 2
+%%EOF
+

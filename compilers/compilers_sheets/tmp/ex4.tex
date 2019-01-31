@@ -1,0 +1,12 @@
+TODO: tiling \\
+This tiling creates the following object code:
+
+\begin{lstlisting}
+ldr r0, [fp, #-4]
+ldr r0, [r0]
+add r0, r0, [fp, #-8]
+str r0, [fp, #-8]
+ldr r0, [fp, #-4]
+ldr r0, [r0, #4]
+str r0, [fp, #-4]
+\end{lstlisting}

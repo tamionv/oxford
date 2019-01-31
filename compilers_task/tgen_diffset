@@ -1,0 +1,258 @@
+diff -r 9f5c8e19f204 -r 3e1250ecc81b lab4/tgen.ml
+--- a/lab4/tgen.ml	Mon Oct 15 21:58:03 2018 +0100
++++ b/lab4/tgen.ml	Wed Jan 16 00:39:28 2019 +0000
+@@ -7,7 +7,9 @@
+ open Optree
+ open Lexer
+ open Print
++open Random
+ 
++let anonymous_functions_to_be_generated = ref []
+ let boundchk = ref false
+ let optlevel = ref 0
+ let debug = ref 0
+@@ -64,7 +66,7 @@
+       ProcDef ->
+         (address d,
+           if d.d_level = 0 then <CONST 0> else schain (!level - d.d_level))
+-    | PParamDef ->
++    | PParamDef | NParamDef->
+         (<LOADW, address d>,
+           <LOADW, <OFFSET, address d, <CONST addr_size>>>)
+     | _ -> failwith "missing closure"
+@@ -99,6 +101,7 @@
+                   address d
+                 else
+                   <LOADW, address d>
++            | NParamDef -> failwith "Named parameters have no address"
+             | StringDef ->
+                 address d
+             | _ -> 
+@@ -128,7 +131,9 @@
+     | None -> 
+         begin
+           match e.e_guts with
+-              Variable _ | Sub _ | Select _ | Deref _ ->
++              Variable x when (get_def x).d_kind == NParamDef ->
++                gen_call x []
++            | Variable _ | Sub _ | Select _ | Deref _ ->
+                 let ld = if size_of e.e_type = 1 then LOADC else LOADW in
+                 <ld, gen_addr e>
+             | Monop (w, e1) ->
+@@ -141,6 +146,7 @@
+                 <BINOP w, gen_expr e1, gen_expr e2>
+             | FuncCall (p, args) -> 
+                 gen_call p args
++            | Constant (x, _) -> <CONST x>
+             | _ -> failwith "gen_expr"
+         end
+ 
+@@ -150,12 +156,20 @@
+   match d.d_kind with
+       LibDef q ->
+         gen_libcall q args
++    | NParamDef ->
++        let (fn, sl) = gen_closure d in
++        <CALL 0, @(fn :: <STATLINK, sl> :: [])>
+     | _ ->
+         let p = get_proc d.d_type in
+         let (fn, sl) = gen_closure d in
+         let args = List.concat (List.map2 gen_arg p.p_fparams args) in
+         <CALL p.p_pcount, @(fn :: <STATLINK, sl> :: numargs 0 args)>
+ 
++and curr_anonymous = ref 0
++and get_anonymous_label () = 
++    Random.self_init ();
++    curr_anonymous := 1 + !curr_anonymous;
++    sprintf "__anonymous_$_$_$" [fNum !curr_anonymous; fNum (Random.bits()); fNum (Random.bits())]
+ (* |gen_arg| -- generate code for a procedure argument *)
+ and gen_arg f a = 
+   match f.d_kind with
+@@ -174,6 +188,22 @@
+             | _ -> 
+                 failwith "bad funarg"
+         end
++    | NParamDef ->
++            (
++            let expr = a.e_guts in
++            let block = makeBlock ([],
++                {s_guts = Return (Some 
++                    { e_guts = expr
++                    ; e_type = integer
++                    ; e_value = None
++                    })
++                ; s_line = -1
++                }) in
++            let lab = get_anonymous_label () in
++            anonymous_functions_to_be_generated := 
++                (lab, !level, block) :: !anonymous_functions_to_be_generated;
++            [<GLOBAL lab>; <LOCAL 0>]
++            )
+     | _ -> failwith "bad arg"
+ 
+ (* |gen_libcall| -- generate code to call a built-in procedure *)
+@@ -203,7 +233,7 @@
+         libcall proc (List.map gen_expr args) voidtype
+ 
+ (* |gen_cond| -- generate code to branch on a condition *)
+-let rec gen_cond test tlab flab =
++and gen_cond test tlab flab =
+   match test.e_value with
+       Some v ->
+         if v <> 0 then <JUMP tlab> else <JUMP flab>
+@@ -234,7 +264,7 @@
+         end
+ 
+ (* |gen_jtable| -- lay out jump table for case statement *)
+-let gen_jtable sel table0 deflab =
++and gen_jtable sel table0 deflab =
+   if table0 = [] then
+     <JUMP deflab>
+   else begin
+@@ -250,7 +280,8 @@
+   end
+ 
+ (* |gen_stmt| -- generate code for a statement *)
+-let rec gen_stmt s = 
++and continue_lab = ref (label ())
++and gen_stmt s = 
+   let code =
+     match s.s_guts with
+         Skip -> <NOP>
+@@ -289,37 +320,55 @@
+       | WhileStmt (test, body) ->
+           (* The test is at the top, improving the chances of finding
+              common subexpressions between the test and loop body. *)
+-          let l1 = label () and l2 = label () and l3 = label() in
+-          <SEQ,
+-            <LABEL l1>,
+-            gen_cond test l2 l3,
+-            <LABEL l2>,
+-            gen_stmt body,
+-            <JUMP l1>,
+-            <LABEL l3>>
++          let l1 = label () and l2 = label () and l3 = label()
++          and old_continue_lab = !continue_lab in
++          continue_lab := l1;
++          let return_value = 
++              <SEQ,
++                <LABEL l1>,
++                gen_cond test l2 l3,
++                <LABEL l2>,
++                gen_stmt body,
++                <JUMP l1>,
++                <LABEL l3>> in
++          continue_lab := old_continue_lab;
++          return_value
+ 
+       | RepeatStmt (body, test) ->
+-          let l1 = label () and l2 = label () in
+-          <SEQ,
+-            <LABEL l1>,
+-            gen_stmt body, 
+-            gen_cond test l2 l1,
+-            <LABEL l2>>
++          let l1 = label () and l2 = label () and l3 = label ()
++          and old_continue_lab = !continue_lab in
++          continue_lab := l3;
++          let return_value = 
++              <SEQ,
++                <LABEL l1>,
++                gen_stmt body, 
++                <LABEL l3>,
++                gen_cond test l2 l1,
++                <LABEL l2>> in
++          continue_lab := old_continue_lab;
++          return_value
+ 
+       | ForStmt (var, lo, hi, body, upb) ->
+           (* Use previously allocated temp variable to store upper bound.
+              We could avoid this if the upper bound is constant. *)
+           let tmp = match !upb with Some d -> d | _ -> failwith "for" in
+-          let l1 = label () and l2 = label () in
+-          <SEQ,
+-            <STOREW, gen_expr lo, gen_addr var>,
+-            <STOREW, gen_expr hi, address tmp>,
+-            <LABEL l1>,
+-            <JUMPC (Gt, l2), gen_expr var, <LOADW, address tmp>>,
+-            gen_stmt body,
+-            <STOREW, <BINOP Plus, gen_expr var, <CONST 1>>, gen_addr var>,
+-            <JUMP l1>,
+-            <LABEL l2>>
++          let l1 = label () and l2 = label () and l3 = label ()
++          and old_continue_lab = !continue_lab in
++          continue_lab := l3;
++          let return_value =
++              <SEQ,
++                <STOREW, gen_expr lo, gen_addr var>,
++                <STOREW, gen_expr hi, address tmp>,
++                <LABEL l1>,
++                <JUMPC (Gt, l2), gen_expr var, <LOADW, address tmp>>,
++                gen_stmt body,
++                <LABEL l3>,
++                <STOREW,
++                    <BINOP Plus, gen_expr var, <CONST 1>>, gen_addr var>,
++                <JUMP l1>,
++                <LABEL l2>> in
++          continue_lab := old_continue_lab;
++          return_value
+ 
+       | CaseStmt (sel, arms, deflt) ->
+           (* Use one jump table, and hope it is reasonably compact *)
+@@ -337,13 +386,15 @@
+             <SEQ, @(List.map2 gen_case labs arms)>,
+             <LABEL deflab>,
+             gen_stmt deflt,
+-            <LABEL donelab>> in
++            <LABEL donelab>>
++
++      | ContinueStmt -> <JUMP !continue_lab> in
+ 
+    (* Label the code with a line number *)
+    <SEQ, <LINE s.s_line>, code>
+ 
+ (* unnest -- move procedure calls to top level *)
+-let unnest code =
++and unnest code =
+   let rec do_tree =
+     function
+         <CALL n, @args> ->
+@@ -357,7 +408,7 @@
+     function <op, @args> -> <op, @(List.map do_tree args)> in
+   Optree.canon <SEQ, @(List.map do_root code)>
+ 
+-let show label code =
++and show label code =
+   if !debug > 0 then begin
+     printf "$$:\n" [fStr Mach.comment; fStr label];
+     List.iter (Optree.print_optree Mach.comment) code;
+@@ -366,7 +417,7 @@
+   code
+ 
+ (* |do_proc| -- generate code for a procedure and pass to the back end *)
+-let do_proc lab lev nargs (Block (_, body, fsize, nregv)) =
++and do_proc lab lev nargs (Block (_, body, fsize, nregv)) =
+   level := lev+1;
+   retlab := label ();
+   let code0 = 
+@@ -408,11 +459,20 @@
+         Target.emit_global (get_label d) (size_of d.d_type)
+     | _ -> ()
+ 
++let rec build_all_anonymous () =
++    let tmp = List.rev !anonymous_functions_to_be_generated in
++    anonymous_functions_to_be_generated := [];
++    List.map (fun (lab, lev, bl) -> do_proc lab lev 0 bl) tmp;
++    if (List.length !anonymous_functions_to_be_generated > 0)
++        then build_all_anonymous ()
++        else ()
++
+ (* |translate| -- generate code for the whole program *)
+ let translate (Prog (block, glodefs)) =
+   Target.preamble ();
+   gen_procs (get_decls block);
+   do_proc "pmain" 0 0 block;
++  build_all_anonymous ();
+   List.iter gen_global !glodefs;
+   List.iter (fun (lab, s) -> Target.emit_string lab s) (string_table ());
+   Target.postamble ()

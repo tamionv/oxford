@@ -1,0 +1,2 @@
+The left-recursive version, by applying reductions at the first possible moment, uses O(1) memory, whereas the right-recursive version must first shift through the entire input string before being able to succesfully reduce, using O(n) memory (when n is the total number of identifiers).
+On the other hand, the right-recursive version is more convenient for parsing cons-lists, since then the parse-tree has the same structure as the cons list.

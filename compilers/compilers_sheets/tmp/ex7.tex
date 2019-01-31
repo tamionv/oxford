@@ -1,0 +1,40 @@
+\section{}
+Suppose x is at offset -4 from the frame pointer and y is at offset -8 from the frame pointer. \\
+Code without movm:
+
+\begin{lstlisting}
+ldr r0, [fp, #-8]
+str r0, [fp, #-4]
+\end{lstlisting}
+
+Code with movm:
+
+\begin{lstlisting}
+sub r0, fp, #8
+sub r1, fp, #4
+movm [r1], [r2]
+\end{lstlisting}
+
+So under the assumptions given, the code with movm is 50\% worse than the code without it.
+
+\section{}
+Suppose x and y are local pointers to pointers to integers, again at offests -4 and -8, and we want to compile \texttt{!!x := !!y}.
+Code without movm:
+
+\begin{lstlisting}
+ldr r0, [fp, #-8]
+ldr r1, [fp, #-4]
+ldr r1, [r1]
+str r1, [r0]
+\end{lstlisting}
+
+Code with movm:
+
+\begin{lstlisting}
+ldr r0, [fp, #-8]
+ldr r1, [fp, #-4]
+movm [r1], [r0]
+\end{lstlisting}
+
+\section{}
+

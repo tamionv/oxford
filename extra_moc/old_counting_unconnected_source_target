@@ -1,0 +1,127 @@
+We want to count the number of turing machines for which the initial state S0 has no path to the halting state halt.
+Suppose that we were to run a bfs on some particular turing machine starting from S0. Then we would have the following algorithm:
+
+Q : queue
+Vis : Set
+
+insert S0 into Vis
+insert S0 into Q
+
+while Q not empty do
+    q := front of Q
+    pop front off Q
+    for all neighbours q' of q
+        if q' not in Vis
+            insert q' into Vis and Q
+        end
+    end
+end
+
+Notice that if we consider this process on a random graph, the state of the program behaves like a Markov chain (since the randomness is experienced in the "for all neighbours of q" part, and this is independent of previous randomness (since no node is explored twice)).
+Notice also that we can just consider the state modulo an equivalence class, that considers two states equivalent if and only if:
+    - they have the same Q size
+    - they have the same Vis size
+    - both or neigher are currently adding the ith neighbour
+    - both or neither have halt in Vis
+
+So the question becomes:
+
+Consider a Markov chain whose states are in {0, 1, ..., n} x {0, 1, ..., n} x {1, 2} U {halted, non_halted}, and with the following transitions:
+
+(x, y, 1)
+                { if we add a new neighbour that is not halt }
+    -> (x+1, y+1, 2)
+                { if we add an old neighbour }
+    -> (x, y, 2)
+                { if we add halt }
+    -> halted
+
+(x, y>0, 2)
+                { if we add a new neighbour that is not halt }
+    -> (x+1, y, 1)
+                { if we add an old neighbour }
+    -> (x, y-1, 1)
+                { if we add halt }
+    -> halted
+
+(x, 0, 2)
+                { if we add a new neighbour that is not halt }
+    -> (x+1, 0, 1)
+                { if we add an old neighbour }
+    -> non_halted
+                { if we add halt }
+    -> halted
+
+halted -> halted
+non_halted -> non_halted
+
+and starting from: (1, 1, 1)
+
+But notice that now we can equivalently compact (x, y, z) with (x', y', z') if 2y+1-z = 2y'+1-z'. So we do this to get the following M. Ch.:
+States: {1, 2, ..., n} x {1, 2, ..., 2n}
+Initial state: (0, 1)
+
+(x, y > 1)
+            { add a new neighbour that is not halt, probability (n-x-1)/n }
+    -> (x+1, y+1)
+            { add an old neighbour, probability x/n }
+    -> (x, y-1)
+            { halt, probability 1/n}
+    -> halted
+
+(x, 1) -> 
+            { add a new neighbour that is not halt, probability (n-x-1)/n }
+    -> (x+1, 2)
+            { add an old neighbour, probability x/n }
+    -> terminate
+            { halt, probability 1/n }
+    -> halted
+
+So esentially we have a 2d random walk, where we either go up and left with probability (n-x-1)/n, go down with probability x/n, terminate if we fall of the bottom, and might randomly halt with probability 1/n. We want to know what the probability of terminating is.
+
+The code is kinda like:
+
+Queue q; Vis v;
+
+q := { 1 }
+
+while(!q.empty()){
+    x = q.front();
+    q.pop();
+    if(x is halt) HALT;
+    else if(x in v) continue;
+    else{
+        v.insert(x);
+        q.insert(neighbours of x);
+    }
+}
+TERMINATE
+
+d[(i,j) / TERMINATE / HALT] := probabilitate ca ajungi in starea (i, j).
+
+d[TERMINATE] = sum{i = 0..n}( i/n * d[i][1] )
+d[i][j] = (n-i)/n * d[i-1][j-1] + (i-1)/n * d[i][j+1]
+If j == 0, then d[i][j] = 0.
+
+consider e[i][j] = d[i][j+i]. Then:
+
+e[i][j] = d[i][j+i] = (n-i)/n * d[i-1][i+j-1] + (i-1)/n * d[i][i+j+1]
+                    = (n-i)/n * e[i-1][j] + (i-1)/n * d[i][j+1]
+if i+j = 0, then e[i][j] = 0.
+
+d[terminate] = sum { i = 0...n }( i/n * d[i][1-i] )
+
+Ok
+
+Let H(x, y) = sum{i = -inf...inf, j = -inf...inf} (e[i][j] * x^i * y^j)
+            = sum{i, j} 
+
+
+-------------------------------------
+
+We want to know how many nodes are visibile at the end.
+d[i][j] = at step i, what's the probability that we can see j nodes ?
+    The number of things in the stack is j-i.
+    So we will be interested in d[i][i]
+
+

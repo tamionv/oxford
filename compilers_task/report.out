@@ -1,0 +1,45 @@
+\BOOKMARK [1][-]{section.1}{Task}{}% 1
+\BOOKMARK [1][-]{section.2}{Continue statements}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Lexical analysis}{section.2}% 3
+\BOOKMARK [2][-]{subsection.2.2}{Abstract syntax}{section.2}% 4
+\BOOKMARK [2][-]{subsection.2.3}{Parsing}{section.2}% 5
+\BOOKMARK [2][-]{subsection.2.4}{Semantic analysis}{section.2}% 6
+\BOOKMARK [2][-]{subsection.2.5}{Intermediate code generation}{section.2}% 7
+\BOOKMARK [2][-]{subsection.2.6}{Machine code generation}{section.2}% 8
+\BOOKMARK [2][-]{subsection.2.7}{Testing}{section.2}% 9
+\BOOKMARK [1][-]{section.3}{Call by name semantics}{}% 10
+\BOOKMARK [2][-]{subsection.3.1}{Lexical analysis}{section.3}% 11
+\BOOKMARK [2][-]{subsection.3.2}{Abstract Syntax}{section.3}% 12
+\BOOKMARK [2][-]{subsection.3.3}{Parsing}{section.3}% 13
+\BOOKMARK [2][-]{subsection.3.4}{Semantic Analysis}{section.3}% 14
+\BOOKMARK [2][-]{subsection.3.5}{Intermediate code generation}{section.3}% 15
+\BOOKMARK [2][-]{subsection.3.6}{Machine code generation}{section.3}% 16
+\BOOKMARK [2][-]{subsection.3.7}{Testing}{section.3}% 17
+\BOOKMARK [1][-]{section.4}{Appendix A}{}% 18
+\BOOKMARK [1][-]{section.5}{Appendix B}{}% 19
+\BOOKMARK [2][-]{subsection.5.1}{bare\137continue.p}{section.5}% 20
+\BOOKMARK [2][-]{subsection.5.2}{by\137name\137iterator.p}{section.5}% 21
+\BOOKMARK [2][-]{subsection.5.3}{by\137name\137local.p}{section.5}% 22
+\BOOKMARK [2][-]{subsection.5.4}{by\137name\137nested\137function.p}{section.5}% 23
+\BOOKMARK [2][-]{subsection.5.5}{by\137name\137not\137assigned.p}{section.5}% 24
+\BOOKMARK [2][-]{subsection.5.6}{by\137name\137not\137by\137ref.p}{section.5}% 25
+\BOOKMARK [2][-]{subsection.5.7}{by\137name\137not\137param.p}{section.5}% 26
+\BOOKMARK [2][-]{subsection.5.8}{by\137name\137to\137by\137name.p}{section.5}% 27
+\BOOKMARK [2][-]{subsection.5.9}{by\137ref\137to\137by\137name.p}{section.5}% 28
+\BOOKMARK [2][-]{subsection.5.10}{for\137continue.p}{section.5}% 29
+\BOOKMARK [2][-]{subsection.5.11}{given\137named\137param\137test.p}{section.5}% 30
+\BOOKMARK [2][-]{subsection.5.12}{gps\137primes.p}{section.5}% 31
+\BOOKMARK [2][-]{subsection.5.13}{jensen1.p}{section.5}% 32
+\BOOKMARK [2][-]{subsection.5.14}{jensen2.p}{section.5}% 33
+\BOOKMARK [2][-]{subsection.5.15}{jensen2d.p}{section.5}% 34
+\BOOKMARK [2][-]{subsection.5.16}{jensen3.p}{section.5}% 35
+\BOOKMARK [2][-]{subsection.5.17}{jensen\137function.p}{section.5}% 36
+\BOOKMARK [2][-]{subsection.5.18}{lazy\137evaluate\137by\137name.p}{section.5}% 37
+\BOOKMARK [2][-]{subsection.5.19}{multiple\137continues.p}{section.5}% 38
+\BOOKMARK [2][-]{subsection.5.20}{nested\137continue.p}{section.5}% 39
+\BOOKMARK [2][-]{subsection.5.21}{reevaluate\137by\137name.p}{section.5}% 40
+\BOOKMARK [2][-]{subsection.5.22}{repeat\137continue.p}{section.5}% 41
+\BOOKMARK [2][-]{subsection.5.23}{rightarrow\137non\137int\137error.p}{section.5}% 42
+\BOOKMARK [2][-]{subsection.5.24}{rightarrow\137same\137as\137var.p}{section.5}% 43
+\BOOKMARK [2][-]{subsection.5.25}{while\137continue.p}{section.5}% 44
+\BOOKMARK [1][-]{section.6}{Sources}{}% 45

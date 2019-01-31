@@ -1,0 +1,149 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>~/oxford/compilers/lab2/kgen.ml.html</title>
+<meta name="Generator" content="Vim/8.0">
+<meta name="plugin-version" content="vim7.4_v2">
+<meta name="syntax" content="ocaml">
+<meta name="settings" content="use_css,pre_wrap,no_foldcolumn,expand_tabs,prevent_copy=">
+<meta name="colorscheme" content="apprentice">
+<style type="text/css">
+<!--
+pre { white-space: pre-wrap; font-family: monospace; color: #bcbcbc; background-color: #262626; }
+body { font-family: monospace; color: #bcbcbc; background-color: #262626; }
+* { font-size: 1em; }
+.String { color: #87af87; }
+.Comment { color: #585858; }
+.Constant { color: #ff8700; }
+.Statement { color: #87afd7; }
+.PreProc { color: #5f8787; }
+-->
+</style>
+
+<script type='text/javascript'>
+<!--
+
+-->
+</script>
+</head>
+<body>
+<pre id='vimCodeElement'>
+<span class="Comment">(* lab2/kgen.ml *)</span>
+<span class="Comment">(* Copyright (c) 2017 J. M. Spivey *)</span>
+
+<span class="Statement">open</span> <span class="PreProc">Dict</span>
+<span class="Statement">open</span> <span class="PreProc">Tree</span>
+<span class="Statement">open</span> <span class="PreProc">Keiko</span>
+<span class="Statement">open</span> <span class="PreProc">Print</span>
+
+<span class="Statement">let</span> optflag <span class="Statement">=</span> ref <span class="Constant">false</span>
+
+<span class="Comment">(* |line_number| -- find line number of variable reference *)</span>
+<span class="Statement">let</span> <span class="Statement">rec</span> line_number e <span class="Statement">=</span>
+  <span class="Statement">match</span> e.e_guts <span class="Statement">with</span>
+      <span class="Constant">Variable</span> x <span class="Statement">-&gt;</span> x.x_line
+    <span class="Statement">|</span> <span class="Constant">Sub</span> <span class="Statement">(</span>a, e<span class="Statement">)</span> <span class="Statement">-&gt;</span> line_number a
+    <span class="Statement">|</span> <span class="Statement">_</span> <span class="Statement">-&gt;</span> <span class="Constant">999</span>
+
+<span class="Comment">(* |gen_expr| -- generate code for an expression *)</span>
+<span class="Statement">let</span> <span class="Statement">rec</span> gen_expr e <span class="Statement">=</span>
+  <span class="Statement">match</span> e.e_guts <span class="Statement">with</span>
+      <span class="Constant">Variable</span> <span class="Statement">_</span> <span class="Statement">-&gt;</span> <span class="Statement">if</span> e.e_type <span class="Statement">&lt;&gt;</span> <span class="Constant">Boolean</span> <span class="Statement">then</span> <span class="Constant">SEQ</span> <span class="Statement">[</span>gen_addr e <span class="Statement">;</span> <span class="Constant">LOADW</span><span class="Statement">]</span> <span class="Statement">else</span> <span class="Constant">SEQ</span> <span class="Statement">[</span>gen_addr e<span class="Statement">;</span> <span class="Constant">LOADC</span><span class="Statement">]</span>
+    <span class="Statement">|</span> <span class="Constant">Sub</span> <span class="Statement">(</span>v, <span class="Statement">_</span><span class="Statement">)</span> <span class="Statement">-&gt;</span> <span class="Statement">if</span> e.e_type <span class="Statement">&lt;&gt;</span> <span class="Constant">Boolean</span> <span class="Statement">then</span> <span class="Constant">SEQ</span> <span class="Statement">[</span>gen_addr e <span class="Statement">;</span> <span class="Constant">LOADW</span><span class="Statement">]</span> <span class="Statement">else</span> <span class="Constant">SEQ</span> <span class="Statement">[</span>gen_addr e<span class="Statement">;</span> <span class="Constant">LOADC</span><span class="Statement">]</span>
+    <span class="Statement">|</span> <span class="Constant">Constant</span> <span class="Statement">(</span>n, t<span class="Statement">)</span> <span class="Statement">-&gt;</span>
+        <span class="Constant">CONST</span> n
+    <span class="Statement">|</span> <span class="Constant">Monop</span> <span class="Statement">(</span>w, e1<span class="Statement">)</span> <span class="Statement">-&gt;</span>
+        <span class="Constant">SEQ</span> <span class="Statement">[</span>gen_expr e1<span class="Statement">;</span> <span class="Constant">MONOP</span> w<span class="Statement">]</span>
+    <span class="Statement">|</span> <span class="Constant">Binop</span> <span class="Statement">(</span>w, e1, e2<span class="Statement">)</span> <span class="Statement">-&gt;</span>
+        <span class="Constant">SEQ</span> <span class="Statement">[</span>gen_expr e1<span class="Statement">;</span> gen_expr e2<span class="Statement">;</span> <span class="Constant">BINOP</span> w<span class="Statement">]</span>
+
+<span class="Comment">(* |gen_addr| -- generate code to push address of a variable *)</span>
+<span class="Statement">and</span> gen_addr v <span class="Statement">=</span>
+  <span class="Statement">match</span> v.e_guts <span class="Statement">with</span>
+      <span class="Constant">Variable</span> x <span class="Statement">-&gt;</span>
+        <span class="Statement">let</span> d <span class="Statement">=</span> get_def x <span class="Statement">in</span>
+        <span class="Constant">SEQ</span> <span class="Statement">[</span><span class="Constant">LINE</span> x.x_line<span class="Statement">;</span> <span class="Constant">GLOBAL</span> d.d_lab<span class="Statement">]</span>
+    <span class="Statement">|</span> <span class="Constant">Sub</span> <span class="Statement">(</span>w, <span class="Statement">{</span>e_guts <span class="Statement">=</span> <span class="Constant">Constant</span><span class="Statement">(</span>n, <span class="Statement">_</span><span class="Statement">)</span><span class="Statement">;</span> e_type <span class="Statement">=</span> <span class="Statement">_</span><span class="Statement">}</span> <span class="Statement">)</span> <span class="Statement">-&gt;</span>
+        <span class="Statement">if</span> n <span class="Statement">&gt;</span><span class="Statement">=</span> array_size w.e_type <span class="Statement">then</span> failwith <span class="String">&quot;Out of bounds&quot;</span> <span class="Statement">else</span>
+        <span class="Constant">SEQ</span> <span class="Statement">(</span>
+            <span class="Statement">[</span>gen_addr w
+            <span class="Statement">;</span> <span class="Constant">CONST</span> <span class="Statement">(</span>type_size <span class="Statement">(</span>base_type w.e_type<span class="Statement">)</span> <span class="Statement">*</span> n<span class="Statement">)</span>
+            <span class="Statement">;</span> <span class="Constant">OFFSET</span><span class="Statement">]</span> <span class="Statement">)</span>
+    <span class="Statement">|</span> <span class="Constant">Sub</span> <span class="Statement">(</span>w, e<span class="Statement">)</span> <span class="Statement">-&gt;</span>
+        <span class="Constant">SEQ</span> <span class="Statement">(</span>
+            <span class="Statement">[</span>gen_addr w
+            <span class="Statement">;</span> gen_expr e
+            <span class="Statement">;</span> <span class="Constant">CONST</span> <span class="Statement">(</span>array_size w.e_type<span class="Statement">)</span>
+            <span class="Statement">;</span> <span class="Constant">BOUND</span> <span class="Constant">0</span><span class="Statement">]</span>
+            @
+            <span class="Statement">(if</span> type_size <span class="Statement">(</span>base_type w.e_type<span class="Statement">)</span> <span class="Statement">==</span> <span class="Constant">1</span>
+                <span class="Statement">then</span> <span class="Constant">[]</span>
+                <span class="Statement">else</span>
+                <span class="Statement">[</span> <span class="Constant">CONST</span> <span class="Statement">(</span>type_size <span class="Statement">(</span>base_type w.e_type<span class="Statement">))</span>
+                <span class="Statement">;</span> <span class="Constant">BINOP</span> <span class="Constant">Times</span><span class="Statement">])</span>
+            @
+            <span class="Statement">[</span> <span class="Constant">OFFSET</span><span class="Statement">])</span>
+    <span class="Statement">|</span> <span class="Statement">_</span> <span class="Statement">-&gt;</span> failwith <span class="String">&quot;gen_addr&quot;</span>
+
+<span class="Comment">(* |gen_cond| -- generate code for short-circuit condition *)</span>
+<span class="Statement">let</span> <span class="Statement">rec</span> gen_cond e tlab flab <span class="Statement">=</span>
+  <span class="Comment">(* Jump to |tlab| if |e| is true and |flab| if it is false *)</span>
+  <span class="Statement">match</span> e.e_guts <span class="Statement">with</span>
+      <span class="Constant">Constant</span> <span class="Statement">(</span>x, t<span class="Statement">)</span> <span class="Statement">-&gt;</span>
+        <span class="Statement">if</span> x <span class="Statement">&lt;&gt;</span> <span class="Constant">0</span> <span class="Statement">then</span> <span class="Constant">JUMP</span> tlab <span class="Statement">else</span> <span class="Constant">JUMP</span> flab
+    <span class="Statement">|</span> <span class="Constant">Binop</span> <span class="Statement">((</span><span class="Constant">Eq</span><span class="Statement">|</span><span class="Constant">Neq</span><span class="Statement">|</span><span class="Constant">Lt</span><span class="Statement">|</span><span class="Constant">Gt</span><span class="Statement">|</span><span class="Constant">Leq</span><span class="Statement">|</span><span class="Constant">Geq</span><span class="Statement">)</span> <span class="Statement">as</span> w, e1, e2<span class="Statement">)</span> <span class="Statement">-&gt;</span>
+        <span class="Constant">SEQ</span> <span class="Statement">[</span>gen_expr e1<span class="Statement">;</span> gen_expr e2<span class="Statement">;</span>
+          <span class="Constant">JUMPC</span> <span class="Statement">(</span>w, tlab<span class="Statement">)</span><span class="Statement">;</span> <span class="Constant">JUMP</span> flab<span class="Statement">]</span>
+    <span class="Statement">|</span> <span class="Constant">Monop</span> <span class="Statement">(</span><span class="Constant">Not</span>, e1<span class="Statement">)</span> <span class="Statement">-&gt;</span>
+        gen_cond e1 flab tlab
+    <span class="Statement">|</span> <span class="Constant">Binop</span> <span class="Statement">(</span><span class="Constant">And</span>, e1, e2<span class="Statement">)</span> <span class="Statement">-&gt;</span>
+        <span class="Statement">let</span> lab1 <span class="Statement">=</span> label <span class="Constant">()</span> <span class="Statement">in</span>
+        <span class="Constant">SEQ</span> <span class="Statement">[</span>gen_cond e1 lab1 flab<span class="Statement">;</span> <span class="Constant">LABEL</span> lab1<span class="Statement">;</span> gen_cond e2 tlab flab<span class="Statement">]</span>
+    <span class="Statement">|</span> <span class="Constant">Binop</span> <span class="Statement">(</span><span class="Constant">Or</span>, e1, e2<span class="Statement">)</span> <span class="Statement">-&gt;</span>
+        <span class="Statement">let</span> lab1 <span class="Statement">=</span> label <span class="Constant">()</span> <span class="Statement">in</span>
+        <span class="Constant">SEQ</span> <span class="Statement">[</span>gen_cond e1 tlab lab1<span class="Statement">;</span> <span class="Constant">LABEL</span> lab1<span class="Statement">;</span> gen_cond e2 tlab flab<span class="Statement">]</span>
+    <span class="Statement">|</span> <span class="Statement">_</span> <span class="Statement">-&gt;</span>
+        <span class="Constant">SEQ</span> <span class="Statement">[</span>gen_expr e<span class="Statement">;</span> <span class="Constant">CONST</span> <span class="Constant">0</span><span class="Statement">;</span> <span class="Constant">JUMPC</span> <span class="Statement">(</span><span class="Constant">Neq</span>, tlab<span class="Statement">)</span><span class="Statement">;</span> <span class="Constant">JUMP</span> flab<span class="Statement">]</span>
+
+<span class="Comment">(* |gen_stmt| -- generate code for a statement *)</span>
+<span class="Statement">let</span> <span class="Statement">rec</span> gen_stmt <span class="Statement">=</span>
+  <span class="Statement">function</span>
+      <span class="Constant">Skip</span> <span class="Statement">-&gt;</span> <span class="Constant">NOP</span>
+    <span class="Statement">|</span> <span class="Constant">Seq</span> stmts <span class="Statement">-&gt;</span> <span class="Constant">SEQ</span> <span class="Statement">(</span><span class="PreProc">List</span>.map gen_stmt stmts<span class="Statement">)</span>
+    <span class="Statement">|</span> <span class="Constant">Assign</span> <span class="Statement">(</span>v, e<span class="Statement">)</span> <span class="Statement">-&gt;</span>
+        <span class="Statement">if</span> v.e_type <span class="Statement">&lt;&gt;</span> <span class="Constant">Boolean</span>
+        <span class="Statement">then</span> <span class="Constant">SEQ</span> <span class="Statement">[</span><span class="Constant">LINE</span> <span class="Statement">(</span>line_number v<span class="Statement">)</span><span class="Statement">;</span> gen_expr e<span class="Statement">;</span> gen_addr v<span class="Statement">;</span> <span class="Constant">STOREW</span><span class="Statement">]</span>
+        <span class="Statement">else</span> <span class="Constant">SEQ</span> <span class="Statement">[</span><span class="Constant">LINE</span> <span class="Statement">(</span>line_number v<span class="Statement">)</span><span class="Statement">;</span> gen_expr e<span class="Statement">;</span> gen_addr v<span class="Statement">;</span> <span class="Constant">STOREC</span><span class="Statement">]</span>
+    <span class="Statement">|</span> <span class="Constant">Print</span> e <span class="Statement">-&gt;</span>
+        <span class="Constant">SEQ</span> <span class="Statement">[</span>gen_expr e<span class="Statement">;</span> <span class="Constant">CONST</span> <span class="Constant">0</span><span class="Statement">;</span> <span class="Constant">GLOBAL</span> <span class="String">&quot;lib.print&quot;</span><span class="Statement">;</span> <span class="Constant">PCALL</span> <span class="Constant">1</span><span class="Statement">]</span>
+    <span class="Statement">|</span> <span class="Constant">Newline</span> <span class="Statement">-&gt;</span>
+        <span class="Constant">SEQ</span> <span class="Statement">[</span><span class="Constant">CONST</span> <span class="Constant">0</span><span class="Statement">;</span> <span class="Constant">GLOBAL</span> <span class="String">&quot;lib.newline&quot;</span><span class="Statement">;</span> <span class="Constant">PCALL</span> <span class="Constant">0</span><span class="Statement">]</span>
+    <span class="Statement">|</span> <span class="Constant">IfStmt</span> <span class="Statement">(</span>test, thenpt, elsept<span class="Statement">)</span> <span class="Statement">-&gt;</span>
+        <span class="Statement">let</span> lab1 <span class="Statement">=</span> label <span class="Constant">()</span> <span class="Statement">and</span> lab2 <span class="Statement">=</span> label <span class="Constant">()</span> <span class="Statement">and</span> lab3 <span class="Statement">=</span> label <span class="Constant">()</span> <span class="Statement">in</span>
+        <span class="Constant">SEQ</span> <span class="Statement">[</span>gen_cond test lab1 lab2<span class="Statement">;</span>
+          <span class="Constant">LABEL</span> lab1<span class="Statement">;</span> gen_stmt thenpt<span class="Statement">;</span> <span class="Constant">JUMP</span> lab3<span class="Statement">;</span>
+          <span class="Constant">LABEL</span> lab2<span class="Statement">;</span> gen_stmt elsept<span class="Statement">;</span> <span class="Constant">LABEL</span> lab3<span class="Statement">]</span>
+    <span class="Statement">|</span> <span class="Constant">WhileStmt</span> <span class="Statement">(</span>test, body<span class="Statement">)</span> <span class="Statement">-&gt;</span>
+        <span class="Statement">let</span> lab1 <span class="Statement">=</span> label <span class="Constant">()</span> <span class="Statement">and</span> lab2 <span class="Statement">=</span> label <span class="Constant">()</span> <span class="Statement">and</span> lab3 <span class="Statement">=</span> label <span class="Constant">()</span> <span class="Statement">in</span>
+        <span class="Constant">SEQ</span> <span class="Statement">[</span><span class="Constant">JUMP</span> lab2<span class="Statement">;</span> <span class="Constant">LABEL</span> lab1<span class="Statement">;</span> gen_stmt body<span class="Statement">;</span>
+          <span class="Constant">LABEL</span> lab2<span class="Statement">;</span> gen_cond test lab1 lab3<span class="Statement">;</span> <span class="Constant">LABEL</span> lab3<span class="Statement">]</span>
+
+<span class="Statement">let</span> gen_decl <span class="Statement">(</span><span class="Constant">Decl</span> <span class="Statement">(</span>xs, t<span class="Statement">))</span> <span class="Statement">=</span>
+  <span class="PreProc">List</span>.iter <span class="Statement">(fun</span> x <span class="Statement">-&gt;</span>
+      <span class="Statement">let</span> d <span class="Statement">=</span> get_def x <span class="Statement">in</span>
+      <span class="Statement">let</span> s <span class="Statement">=</span> type_size t <span class="Statement">in</span>
+      printf <span class="String">&quot;GLOVAR $ $\n&quot;</span> <span class="Statement">[</span>fStr d.d_lab<span class="Statement">;</span> fNum s<span class="Statement">])</span> xs
+
+<span class="Comment">(* |translate| -- generate code for the whole program *)</span>
+<span class="Statement">let</span> translate <span class="Statement">(</span><span class="Constant">Program</span> <span class="Statement">(</span>ds, ss<span class="Statement">))</span> <span class="Statement">=</span>
+  <span class="Statement">let</span> code <span class="Statement">=</span> gen_stmt ss <span class="Statement">in</span>
+  printf <span class="String">&quot;PROC MAIN 0 0 0\n&quot;</span> <span class="Constant">[]</span><span class="Statement">;</span>
+  <span class="PreProc">Keiko</span>.output <span class="Statement">(if</span> <span class="Statement">!</span>optflag <span class="Statement">then</span> <span class="PreProc">Peepopt</span>.optimise code <span class="Statement">else</span> code<span class="Statement">)</span><span class="Statement">;</span>
+  printf <span class="String">&quot;RETURN\n&quot;</span> <span class="Constant">[]</span><span class="Statement">;</span>
+  printf <span class="String">&quot;END\n\n&quot;</span> <span class="Constant">[]</span><span class="Statement">;</span>
+  <span class="PreProc">List</span>.iter gen_decl ds
+</pre>
+</body>
+</html>
+<!-- vim: set foldmethod=manual : -->

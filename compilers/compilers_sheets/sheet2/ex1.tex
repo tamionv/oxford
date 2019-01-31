@@ -1,0 +1,92 @@
+\section{Problem 1}
+
+My $\mu$Pascal code to find $\sqrt{2 * 10^8}$:
+
+\begin{lstlisting}[language=Pascal]
+begin
+    v := 200000000;
+    left := 0;
+    right := 46340;
+    (* i.e. largest # whose square fits on 32 bits *)
+
+    (* Invariant: left <= right and left <= floor(sqrt(v)) < right *)
+    while right - left > 1 do
+        mid := (left + right) div 2;
+        if mid * mid > v then
+            right := mid
+        else
+            left := mid
+        end
+    end;
+
+    print left ; newline
+end.
+\end{lstlisting}
+
+\noindent
+The corresponding Keiko code: \\
+
+\ASMEnv{
+\ASMRow{MODULE Main 0 0                          }{Declares the module Main}
+\ASMRow{IMPORT Lib 0                             }{Imports the library Lib 0}
+\ASMRow{ENDHDR                                   }{Marks the end of the Keiko header}
+\ASMRow{PROC MAIN 0 0 0                          }{Declares the beginning of procedure MAIN}
+\ASMRow{!     v := 200000000;                    }{}
+\ASMRow{CONST 200000000                          }{Pushes \texttt{2e8}}
+\ASMRow{STGW \_v                                 }{Assigns \texttt{2e8} to \texttt{v} }
+\ASMRow{!     left := 0;                         }{}
+\ASMRow{CONST 0                                  }{Pushes \texttt{0}}
+\ASMRow{STGW \_left                              }{Assigns \texttt{0} to \texttt{left} }
+\ASMRow{!     right := 46340;                    }{}
+\ASMRow{CONST 46340                              }{Pushes \texttt{46340}}
+\ASMRow{STGW \_right                             }{Assigns \texttt{46340} to \texttt{right} }
+\ASMRow{JUMP L2                                  }{Marks the beginning of a \texttt{while}-loop body}
+\ASMRow{LABEL L1                                 }{Runs the contents of the \texttt{while}-loop again }
+\ASMRow{!         mid := (left + right) div 2;   }{}
+\ASMRow{LDGW \_left                              }{Pushes \texttt{left}}
+\ASMRow{LDGW \_right                             }{Pushes \texttt{right}}
+\ASMRow{PLUS                                     }{Calculates \texttt{left + right}}
+\ASMRow{CONST 2                                  }{Pushes \texttt{2}}
+\ASMRow{DIV                                      }{Calculates \texttt{(left + right) / 2}}
+\ASMRow{STGW \_mid                               }{And stores it in \texttt{mid} }
+\ASMRow{!         if mid * mid > v then          }{}
+\ASMRow{LDGW \_mid                               }{Pushes \texttt{mid}}
+\ASMRow{LDGW \_mid                               }{Pushes \texttt{mid}}
+\ASMRow{TIMES                                    }{We now calculate \texttt{mid * mid}}
+\ASMRow{LDGW \_v                                 }{Pushes \texttt{v}}
+\ASMRow{JGT L4                                   }{Start of an \texttt{if}, that branches on \texttt{mid * mid > v}}
+\ASMRow{JUMP L5                                  }{Otherwise we go to \texttt{L4}}
+\ASMRow{LABEL L4                                 }{The \texttt{then} clause of the \texttt{if} statement}
+\ASMRow{!             right := mid               }{}
+\ASMRow{LDGW \_mid                               }{Pushes \texttt{mid}}
+\ASMRow{STGW \_right                             }{Saves the top of the stack to \texttt{right}}
+\ASMRow{JUMP L6                                  }{Jumps over the \texttt{else} part of the \texttt{if} statement}
+\ASMRow{LABEL L5                                 }{The \texttt{else} clause of the \texttt{if} statement }
+\ASMRow{!             left := mid                }{}
+\ASMRow{LDGW \_mid                               }{Pushes \texttt{mid}}
+\ASMRow{STGW \_left                              }{Saves the top of the stack to \texttt{left}}
+\ASMRow{LABEL L6                                 }{Marks the end of the \texttt{if} statement}
+\ASMRow{LABEL L2                                 }{Marks the end of a \texttt{while}-loop }
+\ASMRow{!     while right - left > 1 do          }{We now try to check if we contine the loop}
+\ASMRow{LDGW \_right                             }{Pushes \texttt{right}}
+\ASMRow{LDGW \_left                              }{Pushes \texttt{left}}
+\ASMRow{MINUS                                    }{Calculates \texttt{right - left} }
+\ASMRow{CONST 1                                  }{Pushes \texttt{1}}
+\ASMRow{JGT L1                                   }{If \texttt{right - left > 1} we continue the \texttt{while}}
+\ASMRow{JUMP L3                                  }{This jumps to after the while if we stop executing it}
+\ASMRow{LABEL L3                                 }{And this is where we jump to}
+\ASMRow{!     print left ; newline               }{}
+\ASMRow{LDGW \_left                              }{Pushes \texttt{left}}
+\ASMRow{CONST 0                                  }{Pushes \texttt{0}; means that the function is statically linked}
+\ASMRow{GLOBAL lib.print                         }{Pushes the global address lib.print to the stack}
+\ASMRow{PCALL 1                                  }{Calls \texttt{Lib.Print} with 1 argument, to print \texttt{left} }
+\ASMRow{CONST 0                                  }{Pushes \texttt{0}}
+\ASMRow{GLOBAL lib.newline                       }{Pushes the global address lib.newline to the stack}
+\ASMRow{PCALL 0                                  }{Prints a newline }
+\ASMRow{RETURN                                   }{Exits the procedure \texttt{MAIN} }
+\ASMRow{END                                      }{Terminates the program }
+\ASMRow{GLOVAR \_mid 4                           }{Declarations for global variables }
+\ASMRow{GLOVAR \_v 4                             }{}
+\ASMRow{GLOVAR \_left 4                          }{}
+\ASMRow{GLOVAR \_right 4                         }{}
+}

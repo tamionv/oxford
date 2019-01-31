@@ -1,0 +1,15 @@
+We notice that there is a common subexpression between the trees; we can express the optimisation that results from only calculating this once by transforming the trees as shown in diagram 4.
+This optimisation creates the following code:
+
+\begin{lstlisting}
+ldr r0, [fp, #-4]
+ldr r1, [fp, #-8]
+ldr r2, [r0]
+add r1, r1, r2
+str r1, [fp, #-8]
+ldr r1, [r0, #4]
+str r1, [fp, #-4]
+
+\end{lstlisting}
+
+This is better because it no longer stores [fp, \#-4] in a register twice before changing its value.

@@ -1,0 +1,33 @@
+digraph{
+    rankdir=RL
+    main [shape=square, label=main]
+
+    fac3 [shape=square, label="fac(3, id)"]
+    fac2 [shape=square, label="fac(2, k1[3])"]
+    fac1 [shape=square, label="fac(1, k1[2])"]
+    fac0 [shape=square, label="fac(0, k1[1])"]
+
+    k13 [shape=square, label="k1[3](2)"]
+    k12 [shape=square, label="k1[2](1)"]
+    k11 [shape=square, label="k1[1](1)"]
+
+    id [shape = square, label="id(6)"]
+
+    fac3 -> main [color=red]
+    fac2 -> fac3 [color=red]
+    fac1 -> fac2 [color=red]
+    fac0 -> fac1 [color=red]
+    k11 -> fac0 [color=red]
+    k12 -> k11 [color=red]
+    k13 -> k12 [color=red]
+    id  -> k13 [color=red]
+
+    fac3 -> main [color=blue]
+    fac2 -> main [color=blue]
+    fac1 -> main [color=blue]
+    fac0 -> main [color=blue]
+    k11 -> fac1 [color=blue]
+    k12 -> fac2 [color=blue]
+    k13 -> fac3 [color=blue]
+    id  -> main [color=blue]
+}

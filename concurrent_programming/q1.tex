@@ -1,0 +1,8 @@
+This is beneficial for multiple reasons:
+\begin{itemize}
+\item First, it probably will lead to lower latency in situations where two different tabs simultaneously require work to be done.
+\item Second, it is essential if we take sound into account: often people have music playing in one tab while reading something in another tab. This is only possible if the tabs are run in parallel, or are multiplexed to an extent to which they are essentially running in parallel.
+\item Third, it is probably conceptually cleaner to implement each tab as it's own process, rather than have a single large process that runs all tabs simultaneously.
+\end{itemize}
+All of these are still valid in a uni-processor computer. \\
+The main problem is that concurrent programs are relatively harder to get right. This can be dealt with through careful design.

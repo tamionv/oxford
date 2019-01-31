@@ -1,0 +1,130 @@
+\section{4.4}
+\subsection{(a)}
+Any implementation must take into account both size and alignement, as both are needed to determine how much memory to allocate for a particular variable, and are used to determine the size, layout and alignment of record and array types.
+One example of a pair data types that have the same size but different alignments are:
+
+\begin{lstlisting}[language=Pascal]
+type rec1 = record a, b: integer
+type rec2 = record a: longint
+\end{lstlisting}
+
+(where longint is a 64 bit integer). Both of these have a size of 64 = 32 + 32, yet \texttt{rec1} is aligned to 4 bytes, whereas \texttt{rec2} is aligned to 8.
+
+\subsection{(b)}
+
+Assume \texttt{char} is 1 byte long, and aligned to 1 byte, and \texttt{integer} is 4 bytes long, and aligned to 4 bytes. \texttt{rec} would then be 8 bytes long:
+
+\begin{itemize}
+\item The first two bytes would be used to store \texttt{c1} and \texttt{c2}.
+\item The next two bytes have arbitrary values, and are used to align \texttt{n}.
+\item The next four bytes contain \texttt{n}
+\end{itemize}
+
+\texttt{rec} is also aligned to 4 bytes.
+
+\subsection{(c)}
+
+Stack layout when in f:
+
+\stackenv{
+    \stackframe{g}{
+        \stackrow{?}{Static link}
+        \stackrow{@g}{Procedure adress}
+        \stackrow{?}{Return adress}
+        \stackrow{?}{Dynamic link}
+        \addtocounter{stkctr}{4}
+        \stackrow{?}{s}
+    }
+    \stackframe{f}{
+        \stackrow{b - 20}{Argument r}
+        \stackrow{b - 12}{Static link}
+        \stackrow{@g}{Procedure adress}
+        \stackrow{Position after f in g}{Return adress}
+        \stackrow{b - 12}{Dynamic link}
+    }
+}
+
+\newlength{\inslen}
+\settowidth{\inslen}{\texttt{CONST n }}
+\newlength{\deflen}
+\setlength{\deflen}{\linewidth - \inslen}
+
+
+Instructions used: \\
+\texttt{\parbox{\inslen}{LDLW n}  := \parbox[t]{\deflen}{dereference fp+n and push it on the stack}} \\
+\texttt{\parbox{\inslen}{LDNW n}  := \parbox[t]{\deflen}{dereference (address on the top of stack)+n and replace the value on the top of the stack with it}} \\
+\texttt{\parbox{\inslen}{STNW n}  := \parbox[t]{\deflen}{pop the top of the stack and add n to get an address; pop the top of the stack again and assign this value to that address}} \\
+\texttt{\parbox{\inslen}{CONST n} := \parbox[t]{\deflen}{push n to the top of the stack}} \\
+\texttt{\parbox{\inslen}{ADD}     := \parbox[t]{\deflen}{add the top 2 elements on the stack and replace them with the sum}} \\
+\texttt{\parbox{\inslen}{OFFSET}  := \parbox[t]{\deflen}{synonim for ADD for which one of the operands is an address}} \\
+\texttt{\parbox{\inslen}{PCALL n} := \parbox[t]{\deflen}{call a procedure with n arguments}} \\
+\texttt{\parbox{\inslen}{LOCAL n} := \parbox[t]{\deflen}{push (fp+n) to the top of the stack}} \\
+
+Postfix code for \texttt{r.n := r.n + 1}: \\
+
+\asmenv{
+    \asmr{LDLW 16}{Get address of r}
+    \asmr{LDNW 4}{Get value of r.n}
+    \asmr{CONST 1}{}
+    \asmr{ADD}{}
+    \asmr{LDLW 16}{Get address of r}
+    \asmr{STNW 4}{Store r.n+1 into r.n}
+
+}
+
+Postfix code for \texttt{f(s)}:
+
+\asmenv{
+    \asmr{LOCAL 0}{}
+    \asmr{OFFSET -8}{Get address of s}
+    \asmr{LOCAL 0}{Get static link}
+    \asmr{GLOBAL \_f}{Get adress of f}
+    \asmr{PCALL 1}{Call f}
+}
+
+\subsection{(d)}
+
+Postfix code for \texttt{r.n := r.n + 1}:
+
+\asmenv{
+    \asmr{LDLW 16}{Get address of r}
+    \asmr{LDNW 4}{Get value of r.n}
+    \asmr{CONST 1}{}
+    \asmr{ADD}{}
+    \asmr{LDLW 16}{Get address of r}
+    \asmr{STNW 4}{Store r.n+1 into r.n}
+
+}
+
+Postfix code for \texttt{f(s)}:
+
+\asmenv{
+    \asmr{LDLW -4}{Get address of s}
+    \asmr{LOCAL 0}{Get static link}
+    \asmr{GLOBAL \_f}{Get adress of f}
+    \asmr{PCALL 1}{Call f}
+}
+
+\subsection{(e)}
+If we suppose that our Java-like language happens to have Pascal-like syntax, but Java semantics, then the following code shows the difference:
+
+\begin{lstlisting}[language=Pascal]
+
+proc swap(x, y : rec);
+    var tmp: rec;
+begin
+    tmp := x;
+    x := y;
+    y := tmp;
+end;
+
+var r, w: rec;
+begin
+    r.x := 0; w.x := 1;
+    swap(r, w);
+    print(r.x)
+end.
+
+\end{lstlisting}
+
+If we have pass-by-reference semantics, then the output should be 1. If we have pass-by-value semantics, then the output should be 0.

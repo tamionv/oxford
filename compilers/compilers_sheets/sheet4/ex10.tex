@@ -1,0 +1,41 @@
+\subsection{}
+The trees are found in diagram 12.
+
+\subsection{}
+The trees are found in diagram 13-14. Diagram 14 also tiles the trees.
+
+\subsection{}
+The main assumption is that the assignments a[i] := a[j], a[j] := t do not change the values of i and j. This is justified, as integer parameters are copied onto the stack, and thus should not alias any position in an array, or the local variable t. A conservative alias analyser might miss this observation.
+
+\subsection{}
+\begin{lstlisting}
+!Put _a into r0
+ldr r0, =_a
+
+!Put i = [fp, #40] into r1
+ldr r1, [fp, #40]
+
+!Put _a+4i into r1
+add r1, r0, r1, LSL 2
+
+!Put j = [fp, #44] into r2
+ldr r2, [fp, #44]
+
+!Put _a+4j into r2
+add r2, r0, r2, LSL 2
+
+!Put a[i] into t=r4
+ldr r4, [r1]
+
+!Put a[j] into r3
+ldr r3, [r2]
+
+!Store a[j] in a[i]
+str r3, [r1]
+
+!Store r4=t in a[j]
+str r4, [r2]
+\end{lstlisting}
+
+\subsection{}
+I believe this code to be optimal, as no common subexpressions are not shared, and since all trees in our sequence have been converted into instructions in an optimal way.

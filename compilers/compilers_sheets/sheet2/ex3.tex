@@ -1,0 +1,42 @@
+\section{Problem 3}
+I assume I don't have a \texttt{SWAP} instruction.
+
+\begin{lstlisting}[language=Ml]
+
+(* This function associates each instrution with the effect
+ * it has on stack depth *)
+let stack_depth_delta instruction = match instruction with
+    BINOP w -> -1
+    | MONOP w -> 0
+    ...
+
+(* This function computes the largest element in a list *)
+let rec max_element ls = match ls with
+    [x] -> x
+    x :: xs -> max x (max_element xs)
+
+(* This function finds the maximal stack depth for a certain
+ * instruction sequence *)
+let max_stack_depth ls =
+    max_element
+        (0 :: List.foldl (fun acc x -> acc + stack_depth_delta x) 0ls)
+
+(* This will generate optimal code for expr, assuming that
+ * the temporary variables v, v+1, ... are available,
+ * using at most N stack positions. *)
+let rec gen expr N v = match expr with
+      Constant x ->
+        CONST x
+    | Variable x ->
+        SEQ [LINE x.x_line; LDGW x.x_lab]
+    | Monop (w, e1) ->
+        SEQ [gen e1 N v; MONOP w]
+    | Binop (w, e1, e2) ->
+        let ins1 = gen e1 N (v+1)
+        and ins2 = gen e2 N (v+1) in
+        if max_stack_depth ins2 < N then
+            SEQ [ins1; ins2; BINOP w]
+        else
+            SEQ [ins1; GET v ; ins2; PUT v ; BINOP w]
+
+\end{lstlisting}

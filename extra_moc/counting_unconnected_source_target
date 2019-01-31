@@ -1,0 +1,32 @@
+We have a 2-regular not necesarily simple random graph with n nodes, out of which we distinguish 2 (say s and t), and the order of the edges in the adj. list matters. How many of these graphs can visit t from s ?
+
+First we answer: what is the number T(n, k) = "how many of these graphs have exactly k nodes visitable from s?".
+
+First, stable sets: a set S of nodes of G is "stable" iff. U {neigh(x) | x in S} <= S.
+Second: CL: in a graph G we can visit exactly S iff. S is stable and no subset of S is stable.
+PF:
+=>. if we can visit exactly S, then S must be stable (since if it were not we could visit the element of the neghbours of S that determined instability). Also, if we can visit exactly S, then no subset of S could be stable (since if it were, then no path could exist to nodes outside of the subset).
+<=. if S is stable, then S is an upper bound w.r.t. inclusion to the nodes visitable from s (since if we could visit some node outside of S then S can't be stable). Since no subset of S is stable, we have that S is a lower bound to the nodes visitable from s, by contrapositive (i.e. if we couldn't visit some node in S, then removing that node from S leaves us with a stable set).
+
+--------
+
+Th. there exists a unique minimal stable  set.
+Pf. obv.
+
+-------
+
+So to find T(n, k), we fix the set we can visit from s in (n-1 take k-1) ways, and then find out the number of graphs where the unique minimal stable set has exactly k nodes. Let this be C(n, k). (i.e. T(n, K) = (n-1 take k-1) * C(n, k)).
+
+C(n, k) = the number of graphs where the u.m.stable set has k nodes
+     = (the number of graphs where there exists some stable set with k nodes
+            -
+        (the number of k node graphs with a u.m. stable set of k-1 nodes) * n ^ 2(n-k)
+            -
+        (the number of k node graphs with a u.m. stable set of k-2 nodes) * n ^ 2(n-k)
+            -
+        ...
+            -
+        (the number of k node graphs with a u.m. stable set of 1 node) * n ^ 2(n-k)) * (n-1 take k-1)
+    = (k^2k - C(k, k-1) - C(k, k-2) - ... - C(k, 1)) * n ^ (n-k)
+
+Notice then that: C(n, k) = n ^ (n-k) * 

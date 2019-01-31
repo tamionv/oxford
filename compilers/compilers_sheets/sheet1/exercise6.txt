@@ -1,0 +1,8 @@
+To do this, add an extra token for ELSEIF, and add an extra non-terminal symbol elseif_list which has the following production rules:
+
+elseif_list -> ELSEIF expr THEN stmts elseif_list { IfStmt($2, $4, $5) }
+            | END                                 { Skip }
+
+and add the following production rule to stmt:
+
+stmt -> IF expr THEN stmts elseif_list { IfStmt($2, $4, $5) }

@@ -1,0 +1,16 @@
+digraph{
+    rankdir=RL
+    main [shape=square, label=main]
+    sum [shape=square, label=sum]
+    doVec [shape=square, label=doVec]
+    add [shape = square, label=add]
+
+    add -> doVec [color=red]
+    doVec -> sum [color=red]
+    sum -> main [color=red]
+
+    add -> sum [color=blue]
+    doVec -> main [color=blue]
+    sum -> main [color=blue]
+
+}

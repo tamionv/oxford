@@ -1,0 +1,72 @@
+\section{Problem 5}
+\subsection{a}
+A suitable representation is the type:
+\begin{lstlisting}
+type expr = Const of int
+    | Var of string
+    | Plus of expr * expr
+    | Times of expr * expr
+\end{lstlisting}
+Assuming we have type:
+\begin{lstlisting}
+type code = CONST of int | LOAD of string | ADDMUL | SEQ of code list
+\end{lstlisting}
+which represents code in the vector machine, then a translation function would be:
+
+\begin{lstlisting}[language=Ml]
+let rec translate = function
+    Const x -> CONST x
+    | Var x -> LOAD X
+    | Times x y ->
+        SEQ [CONST 0; translate x; translate y; ADDMUL]
+    | Plus x (Times y z) ->
+        SEQ [translate x; translate y; translate z; ADDMUL]
+    | Plus (Times x y) z ->
+        SEQ [translate z; translate x; translate y; ADDMUL]
+    | Plus x y -> SEQ [trasnlate x; translate y; CONST 1; ADDMUL]
+
+\end{lstlisting}
+
+\subsection{b}
+\ASMEnv{
+\ASMRow{Instruction}{Stack after instruction}
+\ASMRow{CONST 0}{0}
+\ASMRow{CONST 4}{0, 4}
+\ASMRow{LOAD a}{0, 4, a}
+\ASMRow{ADDMUL}{4 * a}
+\ASMRow{CONST 0}{4 * a, 0}
+\ASMRow{SWAP}{0, 4 * a}
+\ASMRow{LOAD c}{0, 4 * a, c}
+\ASMRow{ADDMUL}{4 * a * c}
+\ASMRow{LOAD b}{4 * a * c, b}
+\ASMRow{LOAD b}{4 * a * c, b, b}
+\ASMRow{ADDMUL}{4 * a * c + b * b}
+}
+
+\subsection{c}
+Suppose $e$ is some expression that requires a stack depth of $3$. Suppose $t$ is a sequence of instructions that calculates that $e$. Now, notice that if we calculate $e * e$ in a machine that allows arbitrary permutations of a bounded number of elements on the top of the stack, we can use a stack of depth at most $4$:
+
+\ASMEnv{
+\ASMRow{Instruction}{Stack after instruction}
+\ASMRow{t}{e}
+\ASMRow{t}{e, e}
+\ASMRow{CONST 0}{e, e, 0}
+\ASMRow{SWAP top with 3rd from top}{0, e, e}
+\ASMRow{ADDMUL}{e * e}
+}
+
+(the stack depth of $4$ is reached when calculating $e$ for the second time).\\
+(For simplicity I assumed that we can't "cheat" and just copy the value of e from the top of the stack again -- since any expression can be made into a structurally identical expression that evaluates to something different by changing some choice of variable or constant, this is justified).\\
+
+Now, note that in a machine that can only swap the top $2$ values in the stack, the $0$ we require on the bottom of the stack in the final \texttt{ADDMUL} operation cannot be put there after the calculation of the second $e$. This means that we must first reach a stack state of \texttt{0, e} (by first calculating $e$, then pushing a $0$, then \texttt{SWAP}-ing), and then calculate $e$ again. Since calculating $e$ takes at least a stack of depth $3$, this procedure requires a stack of depth $4$.
+
+\subsection{d}
+
+Part (c) suggests that a sufficient instruction should be a \texttt{SWAP3} instruction, that swaps the top element of the stack with the 3rd element off the top (I think the reason why this is important has to do with the fact that these two swaps together can arbitrarily permute the top $3$ elements on the stack, and \texttt{ADDMUL} uses the top $3$ elements on the stack only).
+The algorithm I suggest for generating the optimum has several cases:
+\begin{itemize}
+\item If we deal with constants or variablas, simply CONST or LOAD them onto the stack.
+\item If we deal with an expression of the form $x * y$, then calculate $x$ and $y$ in the decreasing order of needed stack height, then push a $0$ onto the stack. Then, \texttt{SWAP3} the $0$ so that it is the $3^{rd}$ from the top, then \texttt{ADDMUL}
+\item If we deal with an expression of the form $a*b + c*d$, w.l.o.g. suppose that evaluating $a*b$ takes more stack space then $c*d$. Then, first evaluate $a*b$ as before, then evaluate $c$, then $d$, then \texttt{ADDMUL}
+\item If we deal with an expression of the form $x + c * d$ (or symmetrically $c * d + x$), evaluate $x$, then $c$, then $d$, then \texttt{ADDMUL}
+\end{itemize}

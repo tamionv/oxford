@@ -1,0 +1,52 @@
+\section{4.1}
+
+\begin{lstlisting}[language=Pascal]
+
+proc double(x: integer): integer;
+begin
+    return x + x
+end;
+
+proc apply3(proc f(x:integer): integer): integer;
+begin
+    return f(3)
+end;
+
+begin
+    print_num(apply3(double));
+    newline()
+end.
+
+\end{lstlisting}
+
+\asmenv{
+    \asmr{MODULE main 0 0}{}
+    \asmr{IMPORT Lib 0}{}
+    \asmr{ENDHDR}{}
+    \asmr{}{}
+    \asmr{PROC \_double 0 0 0}{Declares \_double as a procedure that uses 0 words for local variables }
+    \asmr{LDLW 16}{Get x }
+    \asmr{LDLW 16}{Get x }
+    \asmr{PLUS}{Calculate x+x }
+    \asmr{RETURNW}{Return x+x}
+    \asmr{}{}
+    \asmr{PROC \_apply3 0 0 0}{Like the previous PROC}
+    \asmr{CONST 3}{First argument of f}
+    \asmr{LDLW 16}{Static link of f}
+    \asmr{LDLW 20}{Address of f}
+    \asmr{PCALLW 1}{Call f with one argument}
+    \asmr{RETURNW}{Return f(3)}
+    \asmr{}{}
+    \asmr{PROC \_main 0 0 0}{Main procedure}
+    \asmr{GLOBAL \_double}{First argument of apply3}
+    \asmr{CONST 0}{Static link of previous procedure}
+    \asmr{CONST 0}{Static link of procedure we now call}
+    \asmr{GLOBAL \_apply3}{Address of function we now call}
+    \asmr{PCALLW 2}{2, as the static link passed counts as a parameter}
+    \asmr{CONST 0}{A static link}
+    \asmr{GLOBAL \_print\_num}{Address of \_print\_num}
+    \asmr{PCALLW 1}{Call print\_num}
+    \asmr{CONST 0}{A static link}
+    \asmr{GLOBAL \_newline}{Address of \_newline}
+    \asmr{PCALLW 0}{Call \_newline}
+}

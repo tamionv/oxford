@@ -1,0 +1,21 @@
+An ambigouous statement in the grammar is:
+    if expr1 then if expr2 then stmt1 else stmt2
+Which can be parsed as:
+    if expr1 then (if expr2 then stmt1 else stmt2)
+Or as:
+    if expr1 then (if expr2 then stmt1) else stmt2
+
+An alternate grammar is:
+
+stmt -> basic-stmt
+      | if expr then stmt
+      | if expr then stmt-without-bare-if else stmt
+
+stmt-without-bare-if -> basic-stmt
+                      | if expr then stmt else stmt-without-bare-if
+
+
+Agaijn, an ambigouous sentence in the grammar is:
+    if e1 then if e2 then s1 else s2
+
+The moment when we cand do two different types of actions is when we have already processed "if e1 then if e2 then s2", having pushed all these values in the stack. Now, we can either reduce "if e2 then s2" into a "stmt" (which leads to the second parse tree), or shift, adding "else s2" into the stack (which leads to the first parse tree)

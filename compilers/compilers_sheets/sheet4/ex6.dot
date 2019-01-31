@@ -1,0 +1,32 @@
+graph{
+    newrank=true
+    12 [shape=square, label="OFFSET"]
+    2  [shape=square, label="LOADW"]
+    4  [shape=square, label="LOADW"]
+    5  [shape=square, label="LOADW"]
+
+    11 [shape=square, label="CONST 4"]
+
+    13 [shape=square, label="LOADW"]
+    14 [shape=square, label="LOCAL -4"]
+    15 [shape=square, label="STOREW"]
+    8  [shape=square, label="STOREW"]
+    6  [shape=square, label="PLUS"]
+    7  [shape=square, label="LOCAL -8"]
+
+    2 -- 7
+    4 -- 14
+    5 -- 4
+    6 -- 5
+    6 -- 2
+
+    8 -- 6
+    8 -- 7
+
+    12 -- 4
+    12 -- 11
+    13 -- 12
+
+    15 -- 13
+    15 -- 14
+}

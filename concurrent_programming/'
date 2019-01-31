@@ -1,0 +1,192 @@
+import io.threadcso._
+import scala.math._
+import scala.collection.mutable._
+
+trait Multiplier{
+  def multiply(n: Int,
+      a: Array[Array[Int]],
+      b: Array[Array[Int]],
+      c: Array[Array[Int]])
+}
+
+object Sequential_multiplier extends Multiplier{
+  def multiply(n: Int,
+      a: Array[Array[Int]],
+      b: Array[Array[Int]],
+      c: Array[Array[Int]]) = {
+    for(i <- 0 until n)
+      for(k <- 0 until n){
+        c(i)(k) = 0
+        for(j <- 0 until n)
+          c(i)(k) += a(i)(j) * b(j)(k)
+      }
+  }
+}
+
+/* This multiplier considers computing the inner
+ * product of a row and a column a task */
+object Row_by_column_parallel_multiplier
+        extends Multiplier{
+
+  def multiply(n: Int,
+      a: Array[Array[Int]],
+      b: Array[Array[Int]],
+      c: Array[Array[Int]]) = {
+
+    /* Task(i, j) represents that we should
+     * multiply the i'th row of a
+     * with the j'th row of b */
+    case class Task(i: Int, j: Int)
+
+    /* TaskAnswer(i, j, r) represents that
+     * c(i)(j) should be r */
+    case class TaskAnswer(i: Int, j: Int, res: Int)
+
+    var toWorker = OneMany[Task]
+    var toController = ManyOne[TaskAnswer]
+
+    def worker = proc {
+      val Task(i, k) = toWorker?()
+      var res = 0
+      for(j <- 0 until n)
+        res += a(i)(j) * b(j)(k)
+
+      toController!TaskAnswer(i, k, res)
+    }
+
+    def task_distributor = proc {
+      for(i <- 0 until n)
+        for(j <- 0 until n)
+          toWorker!Task(i, j)
+    }
+
+    def task_collector = proc {
+      for(i <- 0 until n * n){
+        val TaskAnswer(i, j, r) = toController?()
+        c(i)(j) = r
+      }
+    }
+
+    def system = 
+      task_distributor ||
+      task_collector ||
+      || (for (i <- 1 to n * n) yield worker)
+
+    run(system)
+  }
+}
+
+/* This multiplier considers computing the inner
+ * products of some rows and some columns a task */
+class Rows_by_columns_parallel_multiplier(nWorkers: Int)
+        extends Multiplier{
+
+  val sqrtNWorkers = sqrt(nWorkers).toInt
+
+  // assume nWorkers is a square, for simplicity
+  require(sqrtNWorkers * sqrtNWorkers == nWorkers)
+
+  def multiply(n: Int,
+      a: Array[Array[Int]],
+      b: Array[Array[Int]],
+      c: Array[Array[Int]]) = {
+
+    /* Task(ileft, iright, kleft, kright) represents that we should
+     * calculate the submatrix of positions (i, k) that satisfy
+     * ileft <= i < iright && kleft <= k < kright */
+    case class Task(ileft: Int, iright:Int, kleft:Int, kright:Int)
+
+    /* TaskAnswer is used only for coordination */
+
+    var toWorker = OneMany[Task]
+    var toController = ManyOne[Unit]
+
+    def worker = proc {
+      val Task(ileft, iright, kleft, kright) = toWorker?()
+      for(i <- ileft until iright)
+        for(k <- kleft until kright){
+          var res = 0
+          for(j <- 0 until n)
+            res += a(i)(j) * b(j)(k)
+          c(i)(k) = res
+        }
+
+      toController!()
+    }
+
+    def task_distributor = proc {
+      val bucket_size = (n + sqrtNWorkers - 1) / sqrtNWorkers
+      // I'll divide the rows / columns into buckets of size "bucket_size".
+      val buckets = Array.fill(sqrtNWorkers)(List[Int]())
+
+      for(i <- 0 until n by bucket_size)
+        for(k <- 0 until n by bucket_size)
+          toWorker!(Task(i, min(i+bucket_size, n), k, min(k+bucket_size, n)))
+    }
+
+    def task_collector = proc {
+      for(i <- 0 until nWorkers){
+        toController?()
+      }
+    }
+
+    def system = 
+      task_distributor ||
+      task_collector ||
+      || (for (i <- 1 to nWorkers) yield worker)
+
+    run(system)
+  }
+}
+
+object Q7 extends App{
+  val n = 2000
+  val nWorkers = 4
+
+  def test_multiplier(m: Multiplier): Long = {
+    val a = Array.fill(n)(Array.fill(n)(scala.util.Random.nextInt(123)))
+    val b = Array.fill(n)(Array.fill(n)(scala.util.Random.nextInt(123)))
+    val c = Array.fill(n)(Array.fill(n)(0))
+    val cc = Array.fill(n)(Array.fill(n)(0))
+
+
+    val t0 = System.nanoTime()
+    m.multiply(n, a, b, c)
+    val t1 = System.nanoTime()
+    Sequential_multiplier.multiply(n, a, b, cc)
+
+    for(i <- 0 until n)
+      for(j <- 0 until n)
+        assert(c(i)(j) == cc(i)(j), "Multiplier faulty")
+
+    t1 - t0
+  }
+
+  if(args.size == 0){
+    println("Need at least one argument")
+    println("Use help argument for help")
+  }
+  else{
+    val time = args(0) match{
+      case "help" =>{
+        println("To use give a single input parameter:")
+        println("   sequential: tests a sequential multiplier")
+        println("   rowcol: tests a row by column parallel multiplier")
+        println("   rowscols: tests a rows by columns parallel multiplier")
+        0
+      }
+      case "sequential" =>
+        test_multiplier(Sequential_multiplier)
+      case "rowcol" =>
+        test_multiplier(Row_by_column_parallel_multiplier)
+      case "rowscols" =>
+        test_multiplier(new Rows_by_columns_parallel_multiplier(nWorkers))
+      case _ => {
+        println("Bad argument")
+        0
+      }
+    }
+    println("Total time: " + time)
+  }
+  exit()
+}

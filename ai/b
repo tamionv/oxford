@@ -1,0 +1,322 @@
+#include<iostream>
+#include<stdio.h>
+#include<vector>
+#include<set>
+#include<algorithm>
+using namespace std ;
+ 
+#define inf 1000000007
+#define MAXN 100007
+#define LOG 22
+ 
+int n , output_type ;
+ 
+struct edge {
+    int st ;
+    int to ;
+    int len ;
+    edge ( ) { st = to = len = 0 ; }
+    edge ( int _st , int _to , int _len ) {
+        st = _st ;
+        to = _to ;
+        len = _len ;
+    }
+    bool operator < ( edge other ) {
+        return ( len < other.len ) ;
+    }
+};
+ 
+vector < edge > train[ MAXN ] ;
+vector < edge > bus[ MAXN ] ;
+ 
+vector < edge > all_trains ;
+vector < edge > all_busses ;
+ 
+vector < edge > bus_MST[ MAXN ] ;
+vector < int > ord ;
+int revord[ MAXN ] ;
+int cost[ MAXN ] ;
+int LCA[ MAXN ][ LOG ] ;
+int mxlen[ MAXN ][ LOG ] ;
+int lvl[ MAXN ] ;
+ 
+ 
+int prv[ MAXN ] ;
+int ROOT ;
+ 
+int ans = 0 ;
+long long br = 0 ;
+ 
+void dfs_order ( int vertex , int prv ) {
+    int sz = bus_MST[ vertex ].size ( ) ;
+    int i ;
+    for ( i = 1 ; i < LOG ; i ++ ) {
+        LCA[ vertex ][ i ] = LCA[ LCA[ vertex ][ i - 1 ] ][ i - 1 ] ;
+        mxlen[ vertex ][ i ] = max ( mxlen[ vertex ][ i - 1 ] , mxlen[ LCA[ vertex ][ i - 1 ] ][ i - 1 ] ) ;
+    }
+    ord.push_back ( vertex ) ;
+    revord[ vertex ] = ord.size ( ) - 1 ;
+    for ( i = 0 ; i < sz ; i ++ ) {
+        LCA[ bus_MST[ vertex ][ i ].to ][ 0 ] = vertex ;
+        lvl[ bus_MST[ vertex ][ i ].to ] = lvl[ vertex ] + 1 ;
+        mxlen[ bus_MST[ vertex ][ i ].to ][ 0 ] = bus_MST[ vertex ][ i ].len ;
+        dfs_order ( bus_MST[ vertex ][ i ].to , vertex ) ;
+    }
+}
+ 
+int get_dist ( int x , int y ) {
+    if ( x <= 0 || y <= 0 ) { return inf ; }
+    if ( x == y ) { return 0 ; }
+    int i ;
+    int dx , dy ;
+    dx = x , dy = y ;
+    int ret = 0 ;
+    for ( i = LOG - 1 ; i >= 0 ; i -- ) {
+        if ( lvl[ x ] - lvl[ y ] >= (1<<i) ) {
+            ret = max ( ret , mxlen[ x ][ i ] ) ;
+            x = LCA[ x ][ i ] ;
+        }
+        if ( lvl[ y ] - lvl[ x ] >= (1<<i) ) {
+            ret = max ( ret , mxlen[ y ][ i ] ) ;
+            y = LCA[ y ][ i ] ;
+        }
+    }
+    for ( i = LOG - 1 ; i >= 0 ; i -- ) {
+        if ( LCA[ x ][ i ] != LCA[ y ][ i ] ) {
+            ret = max ( ret , mxlen[ x ][ i ] ) ;
+            ret = max ( ret , mxlen[ y ][ i ] ) ;
+            x = LCA[ x ][ i ] ;
+            y = LCA[ y ][ i ] ;
+        }
+    }
+    if ( x != y ) {
+        ret = max ( ret , mxlen[ x ][ 0 ] ) ;
+        ret = max ( ret , mxlen[ y ][ 0 ] ) ;
+    }
+    return ret ;
+}
+ 
+struct Treap {
+    int val ;
+    int prior ;
+    int sz ;
+    Treap *pl , *pr ;
+    Treap ( ) {
+        this->val = this->prior = this->sz = 0 ;
+        this->pl = this->pr = NULL ;
+    }
+    Treap ( int x ) {
+        this->val = x ;
+        this->prior = rand ( ) ;
+        this->sz = 1 ;
+        this->pl = this->pr = NULL ;
+    }
+};
+Treap* emp = new Treap ( ) ;
+ 
+inline int get_sz ( Treap* w ) {
+    if ( w == NULL ) { return 0 ; }
+    return ( w->sz ) ;
+}
+ 
+void update ( Treap* &w ) {
+	if ( w == NULL ) return;
+	w->sz = get_sz ( w->pl ) + get_sz ( w->pr ) + 1;
+}
+ 
+void merge(Treap* &w, Treap* l, Treap* r) {
+	if ( l == NULL ) { w = r ; return ; }
+	if ( r == NULL ) { w = l ; return ; }
+	if ( l->prior > r->prior ) {
+        merge ( l->pr , l->pr , r);
+        w = l ;
+	}
+	else {
+		merge ( r->pl , l , r->pl ) ;
+		w = r ;
+	}
+	update ( w ) ;
+}
+ 
+void split ( Treap* w , Treap* &l , Treap* &r , int sr ) {
+	if ( w == NULL ) { l = NULL ; r = NULL ; return ; }
+ 
+	if ( w->val <= sr ) {
+		split ( w->pr , w->pr , r , sr ) ;
+		l = w ;
+	}
+	else {
+		split ( w->pl , l , w->pl , sr ) ;
+        r = w ;
+	}
+	update ( w ) ;
+}
+ 
+int get_lst ( Treap *w , int sr ) {
+    if ( w == NULL ) { return ( n + 2 ) ; }
+    if ( w->val < sr ) {
+        int ret = get_lst ( w->pr , sr ) ;
+        if ( ret == ( n + 2 ) ) { return w->val ; }
+        return ret ;
+    }
+    else {
+        return get_lst ( w->pl , sr ) ;
+    }
+}
+ 
+int get_fst ( Treap *w , int sr ) {
+    if ( w == NULL ) { return ( n + 2 ) ; }
+    if ( w->val < sr ) {
+        return get_fst ( w->pr , sr ) ;
+    }
+    else {
+        int ret = get_fst ( w->pl , sr ) ;
+        if ( ret == ( n + 2 ) ) { return w->val ; }
+        return ret ;
+    }
+}
+ 
+void add_val ( Treap* &w , int val ) {
+    pair < Treap* , Treap* > aux ;
+    split ( w , aux.first , aux.second , val ) ;
+    Treap* hh = new Treap ( val ) ;
+    merge ( w , aux.first , hh ) ;
+    merge ( w , w , aux.second ) ;
+}
+ 
+Treap *root[ MAXN ] ;
+set < int > g[ MAXN ] ;
+ 
+ 
+int get_total_right ( Treap *w , int other , int srdist ) {
+    if ( w == NULL ) { return 0 ; }
+    int curr = get_dist ( ord[ w->val ] , other ) ;
+    if ( curr == srdist ) {
+        return get_total_right ( w->pl , other , srdist ) + 1 + get_sz ( w->pr ) ;
+    }
+    else {
+        return get_total_right ( w->pr , other , srdist ) ;
+    }
+}
+ 
+int get_total_left ( Treap *w , int other , int srdist ) {
+    if ( w == NULL ) { return 0 ; }
+    int curr = get_dist ( ord[ w->val ], other ) ;
+    if ( curr == srdist ) {
+        return get_sz ( w->pl ) + 1 + get_total_left ( w->pr , other , srdist ) ;
+    }
+    else {
+        return get_total_left ( w->pl , other , srdist ) ;
+    }
+}
+ 
+int find ( int x ) {
+    if ( prv[ x ] == -1 ) { return x ; }
+    int y = find ( prv[ x ] ) ;
+    prv[ x ] = y ;
+    return y ;
+}
+ 
+void UNITE ( edge ff , bool fl ) {
+    int k1 = find ( ff.st ) ;
+    int k2 = find ( ff.to ) ;
+    if ( k1 != k2 ) {
+        if ( fl == false ) {
+            prv[ k2 ] = k1 ;
+            ROOT = k1 ;
+            bus_MST[ k1 ].push_back ( edge ( k1 , k2 , ff.len ) ) ;
+        }
+        else {
+            if ( get_sz ( root[ k1 ] ) > get_sz ( root[ k2 ] ) ) { swap ( k1 , k2 ) ; }
+            set < int > :: iterator it ;
+            for ( it = g[ k1 ].begin ( ) ; it != g[ k1 ].end ( ) ; it ++ ) {
+                int lst = get_lst ( root[ k2 ] , (*it) ) ;
+                int fst = get_fst ( root[ k2 ] , (*it) ) ;
+                int curans = min ( get_dist ( ord[ (*it) ] , ord[ lst ] ) , get_dist ( ord[ (*it) ] , ord[ fst ] ) ) ;
+                if ( ans > curans + ff.len ) {
+                    ans = curans + ff.len ;
+                    br = 0 ;
+                }
+                if ( output_type == 2 && ans == curans + ff.len ) {
+                    pair < Treap* , Treap* > aux ;
+                    split ( root[ k2 ] , aux.first , aux.second , (*it) ) ;
+                    br += get_total_right ( aux.first , ord[ (*it) ] , curans ) + get_total_left ( aux.second , ord[ (*it) ] , curans ) ;
+                    merge ( root[ k2 ] , aux.first , aux.second ) ;
+                }
+            }
+            for ( it = g[ k1 ].begin ( ) ; it != g[ k1 ].end ( ) ; it ++ ) {
+                g[ k2 ].insert ( (*it) ) ;
+                add_val ( root[ k2 ] , (*it) ) ;
+            }
+            prv[ k1 ] = k2 ;
+        }
+    }
+}
+ 
+void init ( ) {
+    int i ;
+    for ( i = 1 ; i <= n ; i ++ ) {
+        prv[ i ] = -1 ;
+    }
+    sort ( all_busses.begin ( ) , all_busses.end ( ) ) ;
+    for ( i = 0 ; i < ( n - 1 ) ; i ++ ) {
+        UNITE ( all_busses[ i ] , false ) ;
+    }
+    dfs_order ( ROOT , 0 ) ;
+}
+ 
+void input ( ) {
+    scanf ( "%d%d" , &output_type , &n ) ;
+    int i ;
+    for ( i = 0 ; i < n - 1 ; i ++ ) {
+        int x , y , z ;
+        scanf ( "%d%d%d" , &x , &y , &z ) ;
+        train[ x ].push_back ( edge ( x , y , z ) ) ;
+        train[ y ].push_back ( edge ( y , x , z ) ) ;
+        all_trains.push_back ( edge ( x , y , z ) ) ;
+    }
+    for ( i = 0 ; i < n - 1 ; i ++ ) {
+        int x , y , z ;
+        scanf ( "%d%d%d" , &x , &y , &z ) ;
+        bus[ x ].push_back ( edge ( x , y , z ) ) ;
+        bus[ y ].push_back ( edge ( y , x , z ) ) ;
+        all_busses.push_back ( edge ( x , y , z ) ) ;
+    }
+}
+ 
+void solve ( ) {
+    ans = 2 * inf ;
+    init ( ) ;
+    while ( ord.size ( ) < ( n + 3 ) ) { ord.push_back ( 0 ) ; }
+    int i ;
+    sort ( all_trains.begin ( ) , all_trains.end ( ) ) ;
+    for ( i = 1 ; i <= n ; i ++ ) {
+        prv[ i ] = -1 ;
+        root[ i ] = NULL ;
+        add_val ( root[ i ] , revord[ i ] ) ;
+        g[ i ].insert ( revord[ i ] ) ;
+    }
+    for ( i = 0 ; i < ( n - 1 ) ; i ++ ) {
+        UNITE ( all_trains[ i ] , true ) ;
+    }
+    printf ( "%d" , ans ) ;
+    if ( output_type == 2 ) {
+        printf ( " %lld" , br ) ;
+    }
+    printf ( "\n" ) ;
+}
+ 
+int main ( ) {
+    freopen ( "trenbus.in" , "r" , stdin ) ;
+    freopen ( "trenbus.out" , "w" , stdout ) ;
+    input ( ) ;
+    solve ( ) ;
+    return 0 ;
+}
+/**
+1 3
+1 3 4
+2 3 1
+1 2 5
+2 3 10
+**/

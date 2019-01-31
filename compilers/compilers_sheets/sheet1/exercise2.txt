@@ -1,0 +1,7 @@
+A regular expression (in OCAML syntax) that matches a c comment is:
+
+\*([^*]|[\r\n]|(**[^\]))**+\
+
+(a small test for this is included)
+
+A practical advantage for this way of doing comments is that it is easily acchievable in lexical analysis. On the other hand, it does not recognize "bracketing" comments i.e. in /* /* */ */, the space between the two "*/" 's is not commented.

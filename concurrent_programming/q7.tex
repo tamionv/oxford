@@ -1,0 +1,30 @@
+The required code:
+\lstinputlisting[language=scala]{Q7.scala}
+
+\subsection{Experimental data}
+
+I tested the code on computer with a 2-core 2.3 GHz Intel Core i5, with 8 GB of RAM, and 4 logical threads. Each test consisted of multiplying two random 2000 by 2000 matrices. I tested using various numbers of subtasks; the time it took is in the table below, rounded to two decimal places, in seconds:
+
+\begin{tabular}{|l|l|l|l|}
+\hline 
+\diagbox{Number of subtasks}{Multiplier variety} & Direct & Indirect & Sequential \\
+\hline
+4       & 32.16 & 97.48  & 52.78 \\
+9       & 34.86 & 100.77 & \\
+16      & 32.20 & 97.45  & \\
+100     & 31.30 & 97.51  & \\
+400     & 31.40 & 98.39  & \\
+2500    & 29.91 & 97.00  & \\
+10000   & 29.18 & 96.57  & \\
+40000   & 29.31 & 95.54  & \\
+250000  & 33.70 & 96.40  & \\
+1000000 & 48.64 & 95.45  & \\
+\hline
+\end{tabular}
+\\
+
+From here we can deduce that:
+\begin{itemize}
+    \item The indirect multiplier is extremely slow, probably due to the \texttt{ManyOne} channel used.
+    \item The direct multiplier works best with around 10000 tasks, having worse performance for both fewer and more tasks.
+\end{itemize}
